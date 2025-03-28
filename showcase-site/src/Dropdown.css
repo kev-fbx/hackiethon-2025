@@ -1,0 +1,40 @@
+.dropdown-container {
+  width: 50vw; /* Each takes exactly half the screen */
+  height: 35px;
+  position: relative;
+  z-index: 50;
+}
+ 
+.dropdown {
+  background-color: rgb(90, 90, 90);
+  position: absolute;
+  top: 100%;
+  width: 100vw; /* Full viewport width */
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  padding: 0px;
+  box-sizing: border-box;
+  z-index:50;
+}
+ 
+.dropdown.show {
+  background-color: rgb(90, 90, 90);
+  max-height: 1000px;
+  padding: 0px;
+  transition: max-height 0.3s ease-in-out;
+  z-index:50;
+}
+ 
+.dropdown-content {
+  display:flex;      
+  flex-wrap: nowrap;      
+  overflow-x: scroll;        
+  padding-bottom: 5%;  
+  padding-top: 5%;
+  padding-left:5%;
+  padding-right: 5%;
+  gap: 30px;
+  z-index: 50;
+  align-items: center;
+} 
