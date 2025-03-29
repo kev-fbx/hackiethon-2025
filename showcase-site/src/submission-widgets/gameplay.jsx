@@ -222,3 +222,12 @@ export default function VideoTimerWidget() {
     </div>
   );
 }
+
+<div className="absolute bottom-7 w-full flex justify-center gap-8">
+            <img
+              src="/Quit.png"
+              alt="Home"
+              className="cursor-pointer h-11 w-auto hover:scale-105 transition-transform"
+              //onClick not too sure what to do yet 
+            />
+          </div>
