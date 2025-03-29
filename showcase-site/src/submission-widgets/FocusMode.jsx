@@ -21,6 +21,21 @@ const FocusMode = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
 
+  const changeHour = (e) => {
+    const value = Math.max(0, Math.min(99, parseInt(e.target.value) || 0));
+    setHour(value);
+  };
+
+  const changeMin = (e) => {
+    const value = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+    setMin(value);
+  };
+
+  const changeSec = (e) => {
+    const value = Math.max(0, Math.min(99, parseInt(e.target.value) || 0));
+    setSec(value);
+  };
+
   /* Decrements time */
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
@@ -35,12 +50,12 @@ const FocusMode = () => {
 
   /* Initialises timer */
   const startTimer = () => {
-    const initHour = parseInt(hour) || 0;
-    const initMin = parseInt(min) || 0;
-    const initSec = parseInt(sec) || 0;
-    if (initHour > 0 || initMin > 0 || initSec > 0) {
-      setTimeLeft(initHour * 3600 + initMin * 60 + initSec);
-      setIsRunning(true);
+    setIsRunning(true);
+    const totSeconds = hour * 3600 +  min * 60 + sec;
+    if (totSeconds > 0) {
+      setTimeLeft(totSeconds);
+    } else {
+      setIsRunning(false);
     }
   };
 
@@ -49,10 +64,7 @@ const FocusMode = () => {
     const hour = Math.floor(time / 3600);
     const min = Math.floor(time / 60);
     const sec = time % 60;
-    return `${String(hour).padStart(2, "0")}:${String(min).padStart(
-      2,
-      "0"
-    )}:${String(sec).padStart(2, "0")}`;
+    return `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
   return (
@@ -61,20 +73,50 @@ const FocusMode = () => {
         autoPlay
         loop
         muted
-        className="absolute top-0 left-0 w-full h-full object-cover rounded-md"
+        className="absolute top-0 left-0 w-full h-full object-cover rounded-md z-0"
         src="homepage.mp4"
         type="video/mp4"
       ></video>
       {/* New Start Button at the top */}
-      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-10">
+      <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-10">
         <button
-          onClick={[() => console.log("Start button clicked!"), startTimer]}
-          className="w-34 h-12 bg-[url('/Start-btn.png')] bg-cover bg-center bg-no-repeat transition duration 200 active:brightness-50"
+          onClick={startTimer}
+          disabled={isRunning}
+          className="w-34 h-12 bg-[url('/Start-btn.png')] bg-cover bg-center bg-no-repeat transition duration 200 active:brightness-50 disabled:opacity-0"
         />
       </div>
-      <div>
-        <input type="number" />
-      </div>
+        <div className="absolute h-[50px] bottom-22 left-1/2 -translate-x-1/2 z-10 bg-gray-700 px-1 py-1 rounded-md grid grid-cols-3 gap-1 disabled:opacity-0" disabled={isRunning}>
+          <input 
+            className="bg-white rounded-xs px-1.5 disabled:opacity-0"
+            type="number"
+            min="0"
+            max="99"
+            value={hour}
+            onChange={changeHour}
+            disabled={isRunning}
+            placeholder="hh"
+          />
+          <input
+            className="bg-white rounded-xs px-1.5 disabled:opacity-0"
+            type="number"
+            min="0"
+            max="59"
+            value={min}
+            onChange={changeMin}
+            disabled={isRunning}
+            placeholder="mm"
+          />
+          <input 
+            className="bg-white rounded-xs px-1.5 disabled:opacity-0"
+            type="number"
+            min="0"
+            max="59"
+            value={sec}
+            onChange={changeSec}
+            disabled={isRunning}
+            placeholder="ss"
+            />
+        </div>
       </div>
   );
 };
