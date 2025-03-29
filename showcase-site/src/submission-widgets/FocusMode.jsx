@@ -14,7 +14,7 @@ function Button({ onClick, disabled, children, className }) {
 
 /* Primary function. Currently just tracks time
  */
-const StudyTracker = () => {
+const FocusMode = () => {
   const [sec, setSec] = useState(0);
   const [min, setMin] = useState(0);
   const [hour, setHour] = useState(0);
@@ -72,8 +72,11 @@ const StudyTracker = () => {
           className="w-34 h-12 bg-[url('/Start-btn.png')] bg-cover bg-center bg-no-repeat transition duration 200 active:brightness-50"
         />
       </div>
+      <div>
+        <input type="number" />
+      </div>
       </div>
   );
 };
 
-export default StudyTracker;
+export default FocusMode;
