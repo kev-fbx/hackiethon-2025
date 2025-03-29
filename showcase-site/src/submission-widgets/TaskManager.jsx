@@ -223,7 +223,7 @@ export default function TaskManager() {
   };
 
   const renderTaskList = () => (
-    <div className="h-64 overflow-y-auto p-2 border rounded-lg bg-gray-50">
+    <div className="h-64 overflow-y-auto p-2 border rounded-lg bg-gray-50" style={{ fontFamily: "Lilita One" }}>
       {showConfetti && <Confetti numberOfPieces={1000} recycle={false} />} 
       <div className="flex gap-3 mb-4">
         <input 
@@ -310,7 +310,7 @@ export default function TaskManager() {
     );
 
     return (
-      <div className="h-64 overflow-y-auto">
+      <div className="h-64 overflow-y-auto" style={{ fontFamily: "Lilita One" }}>
         <div className="grid grid-cols-2 gap-4">
           {/* Summary Cards */}
           <div className="col-span-2 grid grid-cols-3 gap-3">
@@ -365,17 +365,17 @@ export default function TaskManager() {
 
   return (
     isExpanded ? (
-      <div className="p-5 bg-white shadow-2xl rounded-2xl border border-gray-300 w-[390px] h-[780px] flex flex-col">
+      <div className="p-5 bg-white shadow-2xl rounded-2xl border border-gray-300 w-[390px] h-[750px] flex flex-col" style={{ fontFamily: "Lilita One" }}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl" style={{ fontFamily: "Lilita One" }}>Expanded View</h2>
           <X className="text-gray-500 cursor-pointer hover:text-gray-700" onClick={() => setIsExpanded(false)} />
         </div>
         
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-100 rounded-lg shadow-inner mb-4">
+        <div className="flex-1 overflow-y-auto p-2 bg-gray-100 rounded-lg shadow-inner mb-4">
           {activeTab === "Tasks" ? renderTaskList() :
            activeTab === "Statistics" ? renderStatistics() :
-           activeTab === "Focus Mode" ? 
+           activeTab === "Focus Monitor" ? 
            <DistractionAlertWidget 
              currentSessionTime={currentSessionTime} 
              isVisible={isVisible}
@@ -383,8 +383,8 @@ export default function TaskManager() {
              totalDistractionTime={totalDistractionTime}
              resetSession={resetSession}
            />: 
-           activeTab === "Game analytics" ?
-           <div>
+           activeTab === "Focus Zone" ?
+           <div className="flex h-40" style={{transform: 'scale(0.98)'}}>
             <SubwaySurfers/>
           </div>:<div></div>
           }
@@ -392,7 +392,7 @@ export default function TaskManager() {
   
         {/* Navigation Buttons - Bottom */}
         <div className="grid grid-cols-2 gap-2">
-          {["Tasks", "Statistics", "Focus Mode", "Game analytics"].map(tab => (
+          {["Tasks", "Statistics", "Focus Monitor", "Focus Zone"].map(tab => (
             <button 
               key={tab} 
               className={`px-3 py-2 text-sm rounded-lg font-medium transition-all duration-300 ${
@@ -487,7 +487,7 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
         >
           <Bell className="text-white" size={20} />
           <div>
-            <p className="font-semibold">Welcome back!</p>
+            <p>Welcome back!</p>
             <p className="text-sm opacity-80">You were away for {formatTime(distractionTime)}. Stay focused!</p>
           </div>
         </motion.div>
@@ -499,7 +499,7 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-3 flex justify-between items-center">
           <div className="flex items-center">
             {isVisible ? <Eye className="mr-2" size={18} /> : <EyeOff className="mr-2" size={18} />}
-            <h3 className="font-semibold text-sm">Focus Monitor</h3>
+            <h3 className="text-sm">Focus Monitor</h3>
           </div>
           <button onClick={() => setIsWidgetMinimized(!isWidgetMinimized)} className="text-white hover:text-gray-300">
             {isWidgetMinimized ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
