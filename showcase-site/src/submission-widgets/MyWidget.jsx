@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 /* Button component that can run a function and toggle
    Boolean `disabled` upon being clicked. Children is what is
@@ -6,18 +6,14 @@ import React, { useEffect, useState } from 'react';
 */
 function Button({ onClick, disabled, children, className }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={className}
-    >
+    <button onClick={onClick} disabled={disabled} className={className}>
       {children}
     </button>
-  )
+  );
 }
 
 /* Primary function. Currently just tracks time
-*/
+ */
 const StudyTracker = () => {
   const [sec, setSec] = useState(0);
   const [min, setMin] = useState(0);
@@ -46,59 +42,81 @@ const StudyTracker = () => {
       setTimeLeft(initHour * 3600 + initMin * 60 + initSec);
       setIsRunning(true);
     }
-  }
+  };
 
   /* Formats time in hh:mm:ss */
   const formatTime = (time) => {
     const hour = Math.floor(time / 3600);
     const min = Math.floor(time / 60);
     const sec = time % 60;
-    return `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
-  }
+    return `${String(hour).padStart(2, "0")}:${String(min).padStart(
+      2,
+      "0"
+    )}:${String(sec).padStart(2, "0")}`;
+  };
 
   return (
-    <div className='h-[700px] w-[300px] bg-gray-200 p-5 text-center rounded-md'>
-      <div className='text-center space-y-4'>
-        <h2 className='text-xl font-bold text-gray-800'>Surfer</h2>
-        <div className='timer-input'>
-          <input
-            type='number'
-            min='0'
-            value={hour}
-            onChange={(e) => setHour(Number(e.target.value))}
-            className='w-1/5 bg-blue-100 rounded-md p-1 text-center'
-            disabled={isRunning}
-          />
-          <input
-            type='number'
-            min='0'
-            value={min}
-            onChange={(e) => setMin(Number(e.target.value))}
-            className='w-1/5 bg-blue-100 rounded-md p-1 text-center'
-            disabled={isRunning}
-          />
-          <input
-            type='number'
-            min='0'
-            value={sec}
-            onChange={(e) => setSec(Number(e.target.value))}
-            className='w-1/5 bg-blue-100 rounded-md p-1 text-center'
-            disabled={isRunning}
-          />
-        </div>
-        <div>
-          <Button
-            onClick={startTimer}
-            disabled={isRunning}
-            children={"Start timer!"}
-            className='bg-teal-600 text-black py-2 px-4 rounded-md hover:bg-teal-700 disabled:opacity-50'
-          ></Button>
-          <div className='countdown'>
-            {isRunning && <div className='mt-5 text-2xl font-bold'>{formatTime(timeLeft)}</div>}
+    <div className="h-[560px] w-[315px] bg-gray-200 p-5 text-center rounded-md">
+      <video
+        autoPlay
+        loop
+        muted
+        className="absolute top-0 left-0 w-full h-full object-cover"
+        src="homepage.mp4"
+        type="video/mp4"
+      ></video>
+      {/* New Start Button at the top */}
+      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-10">
+        <button
+          onClick={() => console.log("Start button clicked!")}
+          className="w-32 h-12 bg-[url('/Start-btn.png')] bg-cover bg-center bg-no-repeat"
+        />
+      </div>
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-bold text-gray-800">Surfer</h2>
+          <div className="timer-input">
+            <input
+              type="number"
+              min="0"
+              value={hour}
+              onChange={(e) => setHour(Number(e.target.value))}
+              className="w-1/5 bg-blue-100 rounded-md p-1 text-center"
+              disabled={isRunning}
+            />
+            <input
+              type="number"
+              min="0"
+              value={min}
+              onChange={(e) => setMin(Number(e.target.value))}
+              className="w-1/5 bg-blue-100 rounded-md p-1 text-center"
+              disabled={isRunning}
+            />
+            <input
+              type="number"
+              min="0"
+              value={sec}
+              onChange={(e) => setSec(Number(e.target.value))}
+              className="w-1/5 bg-blue-100 rounded-md p-1 text-center"
+              disabled={isRunning}
+            />
+          </div>
+          <div>
+            <Button
+              onClick={startTimer}
+              disabled={isRunning}
+              children={"Start timer!"}
+              className="bg-teal-600 text-black py-2 px-4 rounded-md hover:bg-teal-700 disabled:opacity-50"
+            ></Button>
+            <div className="countdown">
+              {isRunning && (
+                <div className="mt-5 text-2xl font-bold">
+                  {formatTime(timeLeft)}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
