@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 export default function VideoTimerWidget() {
   // Game state
+  const [isPaused, setIsPaused] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
@@ -78,14 +79,14 @@ export default function VideoTimerWidget() {
 
   // Game completion handler
   useEffect(() => {
-    if (elapsedTime >= duration) {
+    if (elapsedTime >= duration && !isPaused) {
       // Stop all timers
       clearInterval(timerRef.current);
       clearInterval(scoreTimerRef.current);
-      
+
       // Update game state to true
       setTimeReached(true);
-      
+
       // Pause videos
       video1Ref.current?.pause();
       video2Ref.current?.pause();
@@ -99,6 +100,34 @@ export default function VideoTimerWidget() {
     }
   }, [elapsedTime]);
 
+  const togglePause = () => {
+    if (!timeReached) {
+      // Can't pause after game ends
+      setIsPaused(!isPaused);
+
+      if (!isPaused) {
+        // Pause timers and videos
+        clearInterval(timerRef.current);
+        clearInterval(scoreTimerRef.current);
+        video1Ref.current?.pause();
+        video2Ref.current?.pause();
+      } else {
+        // Resume timers and videos
+        timerRef.current = setInterval(() => {
+          setElapsedTime((prev) => prev + 1);
+        }, 1000);
+
+        scoreTimerRef.current = setInterval(() => {
+          scoreRef.current += 1;
+          setScore((prev) => prev + 1);
+        }, 90);
+
+        currentVideo === "video1"
+          ? video1Ref.current?.play()
+          : video2Ref.current?.play();
+      }
+    }
+  };
   // buffer videos early so the transitions are smooth
   useEffect(() => {
     const video2 = video2Ref.current;
@@ -129,7 +158,7 @@ export default function VideoTimerWidget() {
     scoreRef.current = 0;
     setTimeReached(false);
     setCurrentVideo("video1");
-    
+
     // Reset videos
     video1Ref.current.currentTime = 0;
     video1Ref.current.play();
@@ -147,23 +176,72 @@ export default function VideoTimerWidget() {
 
   // Format score with leading zeros (000000 format)
   const formatScore = (score) => {
-    return String(score /** Multiplier*/)
-      .padStart(6, "0")
-      .slice(-6);
+    return String(score /** Multiplier*/).padStart(6, "0").slice(-6);
   };
 
   return (
-    <div className="relative bg-black overflow-hidden" style={{ width: 315, height: 560 }}>
+    <div
+      className="relative bg-black overflow-hidden"
+      style={{ width: 315, height: 560 }}
+    >
+      {/* Pause Button - Top Left */}
+      {!timeReached && !isPaused && (
+        <img
+          src="/Pause.png"
+          alt="Pause"
+          className="absolute top-3 left-3 z-10 cursor-pointer h-8 w-auto hover:scale-110 transition-transform"
+          onClick={togglePause}
+        />
+      )}
+
+      {/* Pause Overlay */}
+      {isPaused && (
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50"
+          style={{
+            width: "240px",
+            height: "171.6px",
+            backgroundImage: `url(/PauseMenu.png)`,
+            backgroundSize: "contain",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 px-4">
+            <img
+              src="/Yes.png"
+              alt="Resume"
+              className="cursor-pointer h-12 w-auto max-w-[80px] hover:scale-105 transition-transform object-contain"
+              onClick={togglePause}
+            />
+            <img
+              src="/No.png"
+              alt="Quit"
+              className="cursor-pointer h-12 w-auto max-w-[80px] hover:scale-105 transition-transform object-contain"
+              onClick={() => setIsPaused(false)}
+            />
+          </div>
+        </div>
+      )}
       {/* Game HUD - Top Right */}
       <div className="absolute top-3 right-3 z-10 flex flex-col items-end gap-2">
-        <div className="bg-black/50 text-white px-2 py-1 rounded-md text-sm" style={{ fontFamily: "Lilita One" }}>
+        <div
+          className="bg-black/50 text-white px-2 py-1 rounded-md text-sm"
+          style={{ fontFamily: "Lilita One" }}
+        >
           {formatTime(elapsedTime)}
         </div>
-        <div className="bg-black/50 text-white px-2 py-1 rounded-md text-sm" style={{ fontFamily: "Lilita One" }}>
+        <div
+          className="bg-black/50 text-white px-2 py-1 rounded-md text-sm"
+          style={{ fontFamily: "Lilita One" }}
+        >
           {formatScore(score)}
         </div>
-        <div className="bg-black/50 text-white px-2 py-1 rounded-md text-sm" style={{ fontFamily: "Lilita One" }}>
-          TOP RUN: {formatScore(highScore)} 
+        <div
+          className="bg-black/50 text-white px-2 py-1 rounded-md text-sm"
+          style={{ fontFamily: "Lilita One" }}
+        >
+          TOP RUN: {formatScore(highScore)}
         </div>
       </div>
 
@@ -172,7 +250,9 @@ export default function VideoTimerWidget() {
         ref={video1Ref}
         muted
         playsInline
-        className={`w-full h-full object-cover ${currentVideo !== "video1" ? "hidden" : ""}`}
+        className={`w-full h-full object-cover ${
+          currentVideo !== "video1" ? "hidden" : ""
+        }`}
       >
         <source src="/Start.mp4" type="video/mp4" />
       </video>
@@ -182,7 +262,9 @@ export default function VideoTimerWidget() {
         muted
         loop
         playsInline
-        className={`w-full h-full object-cover ${currentVideo !== "video2" ? "hidden" : ""}`}
+        className={`w-full h-full object-cover ${
+          currentVideo !== "video2" ? "hidden" : ""
+        }`}
       >
         <source src="/Loop.mp4" type="video/mp4" />
       </video>
@@ -198,9 +280,12 @@ export default function VideoTimerWidget() {
           }}
         >
           {/* Score Display */}
-            <p className="absolute top-14 right-13.5 text-xl font-bold " style={{ fontFamily: "Lilita One"}}>
-              {formatScore(score)}
-            </p>
+          <p
+            className="absolute top-14 right-13.5 text-xl font-bold "
+            style={{ fontFamily: "Lilita One" }}
+          >
+            {formatScore(score)}
+          </p>
 
           {/* Action Buttons */}
           <div className="absolute bottom-7 w-full flex justify-center gap-8">
@@ -211,10 +296,10 @@ export default function VideoTimerWidget() {
               onClick={startAgain}
             />
             <img
-              src="/Quit.png"
+              src="/Home.png"
               alt="Home"
               className="cursor-pointer h-11 w-auto hover:scale-105 transition-transform"
-              //onClick not too sure what to do yet 
+              //onClick not too sure what to do yet
             />
           </div>
         </div>
