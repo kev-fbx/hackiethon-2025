@@ -35,7 +35,7 @@ export default function TaskManager() {
       } else {
         // User returned to the page/app
         setIsVisible(true);
-        
+
         if (lastDistraction) {
           const timeAway = Math.round((new Date() - lastDistraction) / 1000);
           setTotalDistractionTime(prev => prev + timeAway);
@@ -84,7 +84,7 @@ export default function TaskManager() {
   const logActivity = (action, taskData) => {
     const timestamp = new Date();
     const formattedDate = timestamp.toLocaleDateString();
-    
+
     setActivityLog(prevLog => [
       ...prevLog,
       {
@@ -99,7 +99,7 @@ export default function TaskManager() {
 
   const addTask = () => {
     if (newTask.trim() === "") return;
-    
+
     const newTaskData = {
       id: Date.now(),
       text: newTask,
@@ -108,10 +108,10 @@ export default function TaskManager() {
       category: isExpanded ? category : "Personal",
       createdAt: new Date().toISOString()
     };
-    
+
     setTasks([...tasks, newTaskData]);
     logActivity('added', newTaskData);
-    
+
     setNewTask("");
     setPriority("Medium");
     setCategory("Personal");
@@ -121,7 +121,7 @@ export default function TaskManager() {
     setTasks(tasks.map(task => {
       if (task.id === id) {
         const updatedTask = { ...task, completed: !task.completed };
-        
+
         if (!task.completed) {
           setShowConfetti(true);
           setTimeout(() => setShowConfetti(false), 3000);
@@ -129,7 +129,7 @@ export default function TaskManager() {
         } else {
           logActivity('uncompleted', updatedTask);
         }
-        
+
         return updatedTask;
       }
       return task;
@@ -158,21 +158,21 @@ export default function TaskManager() {
     }));
     setEditingTask(null);
   };
-  
+
   // Get statistics data
   const getStatisticsData = () => {
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(task => task.completed).length;
     const incompleteTasks = totalTasks - completedTasks;
     const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-    
+
     // Priority breakdown
     const priorityCounts = {
       High: tasks.filter(task => task.priority === "High").length,
       Medium: tasks.filter(task => task.priority === "Medium").length,
       Low: tasks.filter(task => task.priority === "Low").length,
     };
-    
+
     // Category breakdown
     const categoryCounts = {};
     tasks.forEach(task => {
@@ -181,10 +181,10 @@ export default function TaskManager() {
       }
       categoryCounts[task.category]++;
     });
-    
+
     // Activity by date
     const activityByDate = {};
-    
+
     // Initialize with the last 7 days
     const last7Days = [];
     for (let i = 6; i >= 0; i--) {
@@ -194,23 +194,23 @@ export default function TaskManager() {
       last7Days.push(formattedDate);
       activityByDate[formattedDate] = { date: formattedDate, completed: 0, added: 0 };
     }
-    
+
     // Populate with actual data
     activityLog.forEach(log => {
       if (!activityByDate[log.formattedDate]) {
         activityByDate[log.formattedDate] = { date: log.formattedDate, completed: 0, added: 0 };
       }
-      
+
       if (log.action === 'added') {
         activityByDate[log.formattedDate].added++;
       } else if (log.action === 'completed') {
         activityByDate[log.formattedDate].completed++;
       }
     });
-    
+
     // Convert to array for charts, include only the last 7 days
     const activityData = last7Days.map(date => activityByDate[date] || { date, completed: 0, added: 0 });
-    
+
     return {
       totalTasks,
       completedTasks,
@@ -224,27 +224,27 @@ export default function TaskManager() {
 
   const renderTaskList = () => (
     <div className="h-64 overflow-y-auto p-2 border rounded-lg bg-gray-50" style={{ fontFamily: "Lilita One" }}>
-      {showConfetti && <Confetti numberOfPieces={1000} recycle={false} />} 
+      {showConfetti && <Confetti numberOfPieces={1000} recycle={false} />}
       <div className="flex gap-3 mb-4">
-        <input 
-          value={newTask} 
-          onChange={(e) => setNewTask(e.target.value)} 
-          placeholder="Add a new task..." 
+        <input
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+          placeholder="Add a new task..."
           className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
         />
         {isExpanded && (
           <>
-            <select 
-              value={priority} 
-              onChange={(e) => setPriority(e.target.value)} 
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
               className="p-3 border border-gray-300 rounded-lg">
               <option value="High">🔥 High</option>
               <option value="Medium">⚡ Medium</option>
               <option value="Low">✅ Low</option>
             </select>
-            <select 
-              value={category} 
-              onChange={(e) => setCategory(e.target.value)} 
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
               className="p-3 border border-gray-300 rounded-lg">
               <option value="Assignment">📚 Assignment</option>
               <option value="Projects">🚀 Projects</option>
@@ -262,8 +262,8 @@ export default function TaskManager() {
           <li key={task.id} className={`flex items-center justify-between p-3 border-l-4 rounded-lg shadow-md hover:bg-gray-100 transition ${priorityColors[task.priority]}`}>
             <div>
               {editingTask === task.id ? (
-                <input 
-                  value={editedText} 
+                <input
+                  value={editedText}
                   onChange={(e) => setEditedText(e.target.value)}
                   className="flex-1 p-2 border border-gray-300 rounded-lg"
                 />
@@ -276,21 +276,20 @@ export default function TaskManager() {
             </div>
             <div className="flex gap-3">
               {editingTask === task.id ? (
-                <button  
+                <button
                   disabled={editedText.trim() === ''}
                   onClick={() => saveEdit(task.id)}
-                  className={`font-semibold transition ${
-                    editedText.trim() === '' ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-700'
-                  }`}
+                  className={`font-semibold transition ${editedText.trim() === '' ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-700'
+                    }`}
                 >
                   Save
                 </button>
               ) : (
                 <Edit className="text-gray-500 cursor-pointer hover:text-blue-600 transition" onClick={() => startEditing(task)} />
               )}
-              <CheckCircle 
-                className={`cursor-pointer ${task.completed ? "text-green-500" : "text-gray-500 hover:text-green-500 transition"}`} 
-                onClick={() => toggleTask(task.id)} 
+              <CheckCircle
+                className={`cursor-pointer ${task.completed ? "text-green-500" : "text-gray-500 hover:text-green-500 transition"}`}
+                onClick={() => toggleTask(task.id)}
               />
               <Trash className="text-red-500 cursor-pointer hover:text-red-600 transition" onClick={() => deleteTask(task.id)} />
             </div>
@@ -304,7 +303,7 @@ export default function TaskManager() {
     const stats = getStatisticsData();
     const noDataMessage = (
       <div className="flex flex-col items-center justify-center h-full text-gray-500">
-        <PieChart size={40} className="mb-3 opacity-50" />       
+        <PieChart size={40} className="mb-3 opacity-50" />
         <p className="text-sm mt-1">Add some tasks to see statistics</p>
       </div>
     );
@@ -366,40 +365,39 @@ export default function TaskManager() {
   return (
     isExpanded ? (
       <div className="p-5 bg-white shadow-2xl rounded-2xl border border-gray-300 w-[390px] h-[750px] flex flex-col" style={{ fontFamily: "Lilita One" }}>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl" style={{ fontFamily: "Lilita One" }}>Expanded View</h2>
+        <div className="flex justify-end items-center mb-4">
+          {/* <h2 className="text-xl" style={{ fontFamily: "Lilita One" }}>Expanded View</h2> */}
           <X className="text-gray-500 cursor-pointer hover:text-gray-700" onClick={() => setIsExpanded(false)} />
         </div>
-        
+
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-2 bg-gray-100 rounded-lg shadow-inner mb-4">
           {activeTab === "Tasks" ? renderTaskList() :
-           activeTab === "Statistics" ? renderStatistics() :
-           activeTab === "Focus Monitor" ? 
-           <DistractionAlertWidget 
-             currentSessionTime={currentSessionTime} 
-             isVisible={isVisible}
-             distractionCount={distractionCount}
-             totalDistractionTime={totalDistractionTime}
-             resetSession={resetSession}
-           />: 
-           activeTab === "Focus Zone" ?
-           <div className="flex justify-center items-center h-full" style={{transform: 'scale(0.98)'}}>
-            <SubwaySurfers/>
-          </div>:<div></div>
+            activeTab === "Statistics" ? renderStatistics() :
+              activeTab === "Focus Monitor" ?
+                <DistractionAlertWidget
+                  currentSessionTime={currentSessionTime}
+                  isVisible={isVisible}
+                  distractionCount={distractionCount}
+                  totalDistractionTime={totalDistractionTime}
+                  resetSession={resetSession}
+                /> :
+                activeTab === "Focus Zone" ?
+                  <div className="flex justify-center items-center h-full" style={{ transform: 'scale(0.98)' }}>
+                    <SubwaySurfers />
+                  </div> : <div></div>
           }
         </div>
-  
+
         {/* Navigation Buttons - Bottom */}
         <div className="grid grid-cols-2 gap-2">
           {["Tasks", "Statistics", "Focus Monitor", "Focus Zone"].map(tab => (
-            <button 
-              key={tab} 
-              className={`px-3 py-2 text-sm rounded-lg font-medium transition-all duration-300 ${
-                activeTab === tab 
-                  ? "bg-[#266eab] text-white shadow-md" 
+            <button
+              key={tab}
+              className={`px-3 py-2 text-sm rounded-lg font-medium transition-all duration-300 ${activeTab === tab
+                  ? "bg-[#266eab] text-white shadow-md"
                   : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-              }`} 
+                }`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}
@@ -408,16 +406,15 @@ export default function TaskManager() {
         </div>
       </div>
     ) : (
-      <div className="relative p-5 bg-white shadow-2xl rounded-2xl border border-gray-300 w-110">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Task Manager</h2>
-        {renderTaskList()}
-        <div className="mt-4 flex justify-end">
-          <Maximize 
-
-            className="text-gray-500 cursor-pointer hover:text-gray-700 transition" 
-            onClick={() => setIsExpanded(true)} 
+      <div className="relative p-5 bg-white shadow-2xl rounded-2xl border border-gray-300 w-110" style={{ fontFamily: "Lilita One" }}>
+        <div className="flex justify-between align-center">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Task Manager</h2>
+          <Maximize
+            className="text-gray-500 cursor-pointer hover:text-gray-700 transition"
+            onClick={() => setIsExpanded(true)}
           />
         </div>
+        {renderTaskList()}
       </div>
     )
   );
@@ -435,7 +432,7 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
   const [isWidgetMinimized, setIsWidgetMinimized] = useState(false);
   const [distractionTime, setDistractionTime] = useState(0);
-  
+
   // When isVisible changes from false to true, show welcome back message
   useEffect(() => {
     // Only show welcome back message when returning from being away
@@ -446,14 +443,14 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
         const estimatedLastDistractionTime = Math.round(totalDistractionTime / distractionCount);
         setDistractionTime(estimatedLastDistractionTime);
       }
-      
+
       setShowWelcomeBack(true);
-      
+
       // Hide the welcome back message after 5 seconds
       const timer = setTimeout(() => {
         setShowWelcomeBack(false);
       }, 5000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [isVisible, distractionCount, totalDistractionTime]);
@@ -570,7 +567,7 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
 };
 
 function SubwaySurfers() {
-  
+
   /* Timer states */
   const [sec, setSec] = useState(0);
   const [min, setMin] = useState(0);
