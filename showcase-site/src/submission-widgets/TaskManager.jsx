@@ -365,7 +365,7 @@ export default function TaskManager() {
 
   return (
     isExpanded ? (
-      <div className="p-5 bg-white shadow-2xl rounded-2xl border border-gray-300 w-[378px] h-[672px] flex flex-col">
+      <div className="p-5 bg-white shadow-2xl rounded-2xl border border-gray-300 w-[390px] h-[780px] flex flex-col">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl" style={{ fontFamily: "Lilita One" }}>Expanded View</h2>
           <X className="text-gray-500 cursor-pointer hover:text-gray-700" onClick={() => setIsExpanded(false)} />
