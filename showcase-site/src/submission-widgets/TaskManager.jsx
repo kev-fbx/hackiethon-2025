@@ -222,137 +222,193 @@ export default function TaskManager() {
     };
   };
 
-  const renderTaskList = () => (
-    <div className="h-64 overflow-y-auto p-2 border rounded-lg bg-gray-50" style={{ fontFamily: "Lilita One" }}>
-      {showConfetti && <Confetti numberOfPieces={1000} recycle={false} />}
-      <div className="flex gap-3 mb-4">
-        <input
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          placeholder="Add a new task..."
-          className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+const renderTaskList = () => (
+    <div className="h-full flex flex-col">
+      <div className="flex flex-col gap-3 mb-4 p-2 bg-white rounded-lg shadow-sm">
+        <input 
+          value={newTask} 
+          onChange={(e) => setNewTask(e.target.value)} 
+          placeholder="Add a new task..." 
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 text-sm"
         />
-        {isExpanded && (
-          <>
-            <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="p-3 border border-gray-300 rounded-lg">
-              <option value="High">🔥 High</option>
-              <option value="Medium">⚡ Medium</option>
-              <option value="Low">✅ Low</option>
-            </select>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="p-3 border border-gray-300 rounded-lg">
-              <option value="Assignment">📚 Assignment</option>
-              <option value="Projects">🚀 Projects</option>
-              <option value="Exams">📝 Exams</option>
-              <option value="Personal">🏠 Personal</option>
-            </select>
-          </>
-        )}
-        <button className="bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700 transition" onClick={addTask}>
-          Add
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <select 
+            value={priority} 
+            onChange={(e) => setPriority(e.target.value)} 
+            className="p-2 border border-gray-300 rounded-lg text-sm"
+          >
+            <option value="High">🔥 High</option>
+            <option value="Medium">⚡ Medium</option>
+            <option value="Low">✅ Low</option>
+          </select>
+          <select 
+            value={category} 
+            onChange={(e) => setCategory(e.target.value)} 
+            className="p-2 border border-gray-300 rounded-lg text-sm"
+          >
+            <option value="Assignment">📚 Assignment</option>
+            <option value="Projects">🚀 Projects</option>
+            <option value="Exams">📝 Exams</option>
+            <option value="Personal">🏠 Personal</option>
+          </select>
+        </div>
+        <div>
+          <img src="/AddTask.png" alt="Add Task" className="cursor-pointer h-9 w-auto hover:scale-105 transition-transform" onClick={addTask}>
+          </img>
+        </div>
       </div>
-      <ul className="space-y-3">
+      
+      <ul className="flex-1 overflow-y-auto space-y-2 pr-2">
         {tasks.map(task => (
-          <li key={task.id} className={`flex items-center justify-between p-3 border-l-4 rounded-lg shadow-md hover:bg-gray-100 transition ${priorityColors[task.priority]}`}>
-            <div>
+          <li key={task.id} className={`flex items-center justify-between p-3 border-l-4 rounded-lg shadow-sm hover:bg-gray-50 transition ${priorityColors[task.priority]}`}>
+            <div className="flex-1 min-w-0">
               {editingTask === task.id ? (
-                <input
-                  value={editedText}
+                <input 
+                  value={editedText} 
                   onChange={(e) => setEditedText(e.target.value)}
-                  className="flex-1 p-2 border border-gray-300 rounded-lg"
+                  className="w-full p-2 border border-gray-300 rounded-lg text-sm"
                 />
               ) : (
-                <div>
-                  <span className={task.completed ? "line-through text-gray-500" : "text-gray-800 font-medium"}>{task.text}</span>
-                  <p className="text-sm text-gray-600">{task.category}</p>
+                <div className="space-y-1">
+                  <p className={`text-sm truncate ${task.completed ? "line-through text-gray-500" : "text-gray-800 font-medium"}`}>
+                    {task.text}
+                  </p>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <span className="px-2 py-1 bg-white/50 rounded-full border">{task.category}</span>
+                    <span>{new Date(task.createdAt).toLocaleDateString()}</span>
+                  </div>
                 </div>
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 ml-2">
               {editingTask === task.id ? (
-                <button
+                <button  
                   disabled={editedText.trim() === ''}
                   onClick={() => saveEdit(task.id)}
-                  className={`font-semibold transition ${editedText.trim() === '' ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-700'
-                    }`}
+                  className={`text-xs font-semibold transition ${
+                    editedText.trim() === '' ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-700'
+                  }`}
                 >
                   Save
                 </button>
               ) : (
-                <Edit className="text-gray-500 cursor-pointer hover:text-blue-600 transition" onClick={() => startEditing(task)} />
+                <Edit className="text-gray-500 cursor-pointer hover:text-blue-600 transition" size={16} onClick={() => startEditing(task)} />
               )}
-              <CheckCircle
-                className={`cursor-pointer ${task.completed ? "text-green-500" : "text-gray-500 hover:text-green-500 transition"}`}
-                onClick={() => toggleTask(task.id)}
+              <CheckCircle 
+                className={`cursor-pointer ${task.completed ? "text-green-500" : "text-gray-500 hover:text-green-500 transition"}`} 
+                size={16}
+                onClick={() => toggleTask(task.id)} 
               />
-              <Trash className="text-red-500 cursor-pointer hover:text-red-600 transition" onClick={() => deleteTask(task.id)} />
+              <Trash className="text-red-500 cursor-pointer hover:text-red-600 transition" size={16} onClick={() => deleteTask(task.id)} />
             </div>
           </li>
         ))}
       </ul>
     </div>
   );
-
+  
+  // Updated Statistics styling
   const renderStatistics = () => {
     const stats = getStatisticsData();
-    const noDataMessage = (
-      <div className="flex flex-col items-center justify-center h-full text-gray-500">
-        <PieChart size={40} className="mb-3 opacity-50" />
-        <p className="text-sm mt-1">Add some tasks to see statistics</p>
-      </div>
-    );
-
+    
     return (
-      <div className="h-64 overflow-y-auto" style={{ fontFamily: "Lilita One" }}>
-        <div className="grid grid-cols-2 gap-4">
-          {/* Summary Cards */}
-          <div className="col-span-2 grid grid-cols-3 gap-3">
-            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-              <h3 className="text-lg font-medium text-gray-700">Total Tasks</h3>
-              <p className="text-3xl font-bold text-blue-600">{stats.totalTasks}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-              <h3 className="text-lg font-medium text-gray-700">Completed</h3>
-              <p className="text-3xl font-bold text-green-600">{stats.completedTasks}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-              <h3 className="text-lg font-medium text-gray-700">Completion Rate</h3>
-              <p className="text-3xl font-bold text-purple-600">{stats.completionRate}%</p>
+      <div className="h-full flex flex-col gap-4">
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-xs font-medium text-gray-600 mb-1">Total Tasks</h3>
+            <p className="text-2xl font-bold text-blue-600">{stats.totalTasks}</p>
+          </div>
+          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-xs font-medium text-gray-600 mb-1">Completed</h3>
+            <p className="text-2xl font-bold text-green-600">{stats.completedTasks}</p>
+          </div>
+          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-xs font-medium text-gray-600 mb-1">Completion</h3>
+            <p className="text-2xl font-bold text-purple-600">{stats.completionRate}%</p>
+          </div>
+        </div>
+  
+        <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex-1">
+          <h3 className="text-xs font-medium text-gray-600 mb-3">Weekly Activity</h3>
+          <div className="h-[200px]">
+            {stats.activityData.some(day => day.added > 0 || day.completed > 0) ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={stats.activityData}
+                  margin={{ top: 5, right: 15, left: -15, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value) => value.split('/')[0]}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 10 }}
+                    width={25}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      fontSize: 12,
+                      borderRadius: 8,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                  <Bar 
+                    dataKey="completed" 
+                    name="Completed" 
+                    fill={chartColors.completed} 
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar 
+                    dataKey="added" 
+                    name="Added" 
+                    fill={chartColors.added} 
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                <PieChart size={32} className="mb-2 opacity-50" />
+                <p className="text-xs">No activity data available</p>
+              </div>
+            )}
+          </div>
+        </div>
+  
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-xs font-medium text-gray-600 mb-2">Priority Breakdown</h3>
+            <div className="space-y-1">
+              {Object.entries(stats.priorityCounts).map(([priority, count]) => (
+                <div key={priority} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${priorityColors[priority].split(' ')[0]}`} />
+                    <span className="text-gray-700">{priority}</span>
+                  </div>
+                  <span className="font-medium">{count}</span>
+                </div>
+              ))}
             </div>
           </div>
-
-          {/* Task Completion Trend */}
-          <div className="col-span-2 bg-white p-4 rounded-lg shadow-md border border-gray-200">
-            <h3 className="text-lg font-medium text-gray-700 mb-2">Weekly Task Activity</h3>
-            <div className="h-64">
-              {stats.activityData.some(day => day.added > 0 || day.completed > 0) ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={stats.activityData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="completed" name="Completed Tasks" fill={chartColors.completed} />
-                    <Bar dataKey="added" name="Added Tasks" fill={chartColors.added} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : noDataMessage}
+  
+          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-xs font-medium text-gray-600 mb-2">Categories</h3>
+            <div className="space-y-1">
+              {Object.entries(stats.categoryCounts).map(([category, count]) => (
+                <div key={category} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-700">{category}</span>
+                  <span className="font-medium">{count}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
     );
   };
+
 
   // Reset session function that doesn't get triggered by tab changes
   const resetSession = () => {
@@ -364,7 +420,7 @@ export default function TaskManager() {
 
   return (
     isExpanded ? (
-      <div className="p-5 bg-white shadow-2xl rounded-2xl border border-gray-300 w-[390px] h-[750px] flex flex-col" style={{ fontFamily: "Lilita One" }}>
+      <div className="p-5 bg-[#94cefb] shadow-2xl rounded-2xl border border-gray-300 w-[390px] h-[750px] flex flex-col" style={{ fontFamily: "Lilita One" }}>
         <div className="flex justify-end items-center mb-4">
           {/* <h2 className="text-xl" style={{ fontFamily: "Lilita One" }}>Expanded View</h2> */}
           <X className="text-gray-500 cursor-pointer hover:text-gray-700" onClick={() => setIsExpanded(false)} />
