@@ -61,7 +61,7 @@ const StudyTracker = () => {
         autoPlay
         loop
         muted
-        className="absolute top-0 left-0 w-full h-full object-cover"
+        className="absolute top-0 left-0 w-full h-full object-cover rounded-md"
         src="homepage.mp4"
         type="video/mp4"
       ></video>
@@ -72,34 +72,6 @@ const StudyTracker = () => {
           className="w-34 h-12 bg-[url('/Start-btn.png')] bg-cover bg-center bg-no-repeat transition duration 200 active:brightness-50"
         />
       </div>
-        <div className="text-center space-y-4">
-          <div className="m-auto flex flex-row justify-center">
-            <input
-              type="number"
-              min="0"
-              value={hour}
-              onChange={(e) => setHour(Number(e.target.value))}
-              className="w-1/5 bg-blue-100 rounded-md p-1 text-center"
-              disabled={isRunning}
-            />
-            <input
-              type="number"
-              min="0"
-              value={min}
-              onChange={(e) => setMin(Number(e.target.value))}
-              className="w-1/5 bg-blue-100 rounded-md p-1 text-center"
-              disabled={isRunning}
-            />
-            <input
-              type="number"
-              min="0"
-              value={sec}
-              onChange={(e) => setSec(Number(e.target.value))}
-              className="w-1/5 bg-blue-100 rounded-md p-1 text-center"
-              disabled={isRunning}
-            />
-          </div>
-        </div>
       </div>
   );
 };
