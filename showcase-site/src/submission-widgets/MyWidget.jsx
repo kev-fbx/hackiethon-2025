@@ -56,7 +56,7 @@ const StudyTracker = () => {
   };
 
   return (
-    <div className="h-[560px] w-[315px] bg-gray-200 p-5 text-center rounded-md">
+    <div className="h-[560px] w-[315px] bg-gray-200 p-5 text-center rounded-">
       <video
         autoPlay
         loop
@@ -66,15 +66,14 @@ const StudyTracker = () => {
         type="video/mp4"
       ></video>
       {/* New Start Button at the top */}
-      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-10">
+      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-10">
         <button
-          onClick={() => console.log("Start button clicked!")}
-          className="w-32 h-12 bg-[url('/Start-btn.png')] bg-cover bg-center bg-no-repeat"
+          onClick={[() => console.log("Start button clicked!"), startTimer]}
+          className="w-34 h-12 bg-[url('/Start-btn.png')] bg-cover bg-center bg-no-repeat transition duration 200 active:brightness-50"
         />
       </div>
         <div className="text-center space-y-4">
-          <h2 className="text-xl font-bold text-gray-800">Surfer</h2>
-          <div className="timer-input">
+          <div className="m-auto flex flex-row justify-center">
             <input
               type="number"
               min="0"
@@ -99,21 +98,6 @@ const StudyTracker = () => {
               className="w-1/5 bg-blue-100 rounded-md p-1 text-center"
               disabled={isRunning}
             />
-          </div>
-          <div>
-            <Button
-              onClick={startTimer}
-              disabled={isRunning}
-              children={"Start timer!"}
-              className="bg-teal-600 text-black py-2 px-4 rounded-md hover:bg-teal-700 disabled:opacity-50"
-            ></Button>
-            <div className="countdown">
-              {isRunning && (
-                <div className="mt-5 text-2xl font-bold">
-                  {formatTime(timeLeft)}
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
