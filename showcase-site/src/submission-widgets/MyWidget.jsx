@@ -56,7 +56,7 @@ const StudyTracker = () => {
   };
 
   return (
-    <div className="h-[560px] w-[315px] bg-gray-200 p-5 text-center rounded-">
+    <div className="h-[560px] w-[315px] bg-gray-200 p-5 text-center rounded-md">
       <video
         autoPlay
         loop
