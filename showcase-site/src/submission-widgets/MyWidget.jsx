@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import './MyWidget.css';
 
 /* Button component that can run a function and toggle
    Boolean `disabled` upon being clicked. Children is what is
    displayed as button
 */
-function Button({ onClick, disabled, children }) {
+function Button({ onClick, disabled, children, className }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className='button'
+      className={className}
     >
       {children}
     </button>
@@ -58,7 +57,7 @@ const StudyTracker = () => {
   }
 
   return (
-    <div className='home-page'>
+    <div className='h-[700px] w-[300px] bg-gray-200 p-5 text-center rounded-md'>
       <div className='text-center space-y-4'>
         <h2 className='text-xl font-bold text-gray-800'>Surfer</h2>
         <div className='timer-input'>
@@ -67,7 +66,7 @@ const StudyTracker = () => {
             min='0'
             value={hour}
             onChange={(e) => setHour(Number(e.target.value))}
-            className='input'
+            className='w-1/5 bg-blue-100 rounded-md p-1 text-center'
             disabled={isRunning}
           />
           <input
@@ -75,7 +74,7 @@ const StudyTracker = () => {
             min='0'
             value={min}
             onChange={(e) => setMin(Number(e.target.value))}
-            className='input'
+            className='w-1/5 bg-blue-100 rounded-md p-1 text-center'
             disabled={isRunning}
           />
           <input
@@ -83,14 +82,19 @@ const StudyTracker = () => {
             min='0'
             value={sec}
             onChange={(e) => setSec(Number(e.target.value))}
-            className='input'
+            className='w-1/5 bg-blue-100 rounded-md p-1 text-center'
             disabled={isRunning}
           />
         </div>
         <div>
-          <Button onClick={startTimer} disabled={isRunning} children={"Start timer!"}></Button>
+          <Button
+            onClick={startTimer}
+            disabled={isRunning}
+            children={"Start timer!"}
+            className='bg-teal-600 text-black py-2 px-4 rounded-md hover:bg-teal-700 disabled:opacity-50'
+          ></Button>
           <div className='countdown'>
-            {isRunning && <div>{formatTime(timeLeft)}</div>}
+            {isRunning && <div className='mt-5 text-2xl font-bold'>{formatTime(timeLeft)}</div>}
           </div>
         </div>
       </div>
