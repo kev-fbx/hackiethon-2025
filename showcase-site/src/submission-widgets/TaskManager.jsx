@@ -1,11 +1,28 @@
 import { useState, useEffect, useRef } from "react";
 import { Trash, CheckCircle, Maximize, X, Edit, PieChart } from "lucide-react";
 import Confetti from "react-confetti";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { AlertCircle, Bell, Clock, Eye, EyeOff, XCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  AlertCircle,
+  Bell,
+  Clock,
+  Eye,
+  EyeOff,
+  XCircle,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { motion } from "framer-motion";
-import PropTypes from 'prop-types';
-
+import PropTypes from "prop-types";
 export default function TaskManager() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
@@ -38,26 +55,27 @@ export default function TaskManager() {
 
         if (lastDistraction) {
           const timeAway = Math.round((new Date() - lastDistraction) / 1000);
-          setTotalDistractionTime(prev => prev + timeAway);
-          setDistractionCount(prev => prev + 1);
+          setTotalDistractionTime((prev) => prev + timeAway);
+          setDistractionCount((prev) => prev + 1);
         }
       }
     };
 
     // Session timer - runs regardless of which internal tab is active
     const sessionTimer = setInterval(() => {
-      if (isVisible) { // Only increment time when tab is visible
+      if (isVisible) {
+        // Only increment time when tab is visible
         const elapsed = Math.round((new Date() - sessionStartTime) / 1000);
-        setCurrentSessionTime(prev => elapsed);
+        setCurrentSessionTime((prev) => elapsed);
       }
     }, 1000);
 
     // Add event listener for visibility change
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Clean up
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       clearInterval(sessionTimer);
     };
   }, [lastDistraction, sessionStartTime, isVisible]);
@@ -85,61 +103,62 @@ export default function TaskManager() {
     const timestamp = new Date();
     const formattedDate = timestamp.toLocaleDateString();
 
-    setActivityLog(prevLog => [
+    setActivityLog((prevLog) => [
       ...prevLog,
       {
         id: Date.now(),
         action,
         taskData,
         timestamp,
-        formattedDate
-      }
+        formattedDate,
+      },
     ]);
   };
 
   const addTask = () => {
     if (newTask.trim() === "") return;
-
+  
     const newTaskData = {
       id: Date.now(),
       text: newTask,
       completed: false,
-      priority: isExpanded ? priority : "Medium",
-      category: isExpanded ? category : "Personal",
-      createdAt: new Date().toISOString()
+      priority: priority, 
+      category: category,
+      createdAt: new Date().toISOString(),
     };
-
+  
     setTasks([...tasks, newTaskData]);
-    logActivity('added', newTaskData);
-
+    logActivity("added", newTaskData);
+  
     setNewTask("");
     setPriority("Medium");
     setCategory("Personal");
   };
-
   const toggleTask = (id) => {
-    setTasks(tasks.map(task => {
-      if (task.id === id) {
-        const updatedTask = { ...task, completed: !task.completed };
+    setTasks(
+      tasks.map((task) => {
+        if (task.id === id) {
+          const updatedTask = { ...task, completed: !task.completed };
 
-        if (!task.completed) {
-          setShowConfetti(true);
-          setTimeout(() => setShowConfetti(false), 3000);
-          logActivity('completed', updatedTask);
-        } else {
-          logActivity('uncompleted', updatedTask);
+          if (!task.completed) {
+            setShowConfetti(true);
+            setTimeout(() => setShowConfetti(false), 3000);
+            logActivity("completed", updatedTask);
+          } else {
+            logActivity("uncompleted", updatedTask);
+          }
+
+          return updatedTask;
         }
-
-        return updatedTask;
-      }
-      return task;
-    }));
+        return task;
+      })
+    );
   };
 
   const deleteTask = (id) => {
-    const taskToDelete = tasks.find(task => task.id === id);
-    logActivity('deleted', taskToDelete);
-    setTasks(tasks.filter(task => task.id !== id));
+    const taskToDelete = tasks.find((task) => task.id === id);
+    logActivity("deleted", taskToDelete);
+    setTasks(tasks.filter((task) => task.id !== id));
   };
 
   const startEditing = (task) => {
@@ -148,34 +167,37 @@ export default function TaskManager() {
   };
 
   const saveEdit = (id) => {
-    setTasks(tasks.map(task => {
-      if (task.id === id) {
-        const updatedTask = { ...task, text: editedText };
-        logActivity('edited', updatedTask);
-        return updatedTask;
-      }
-      return task;
-    }));
+    setTasks(
+      tasks.map((task) => {
+        if (task.id === id) {
+          const updatedTask = { ...task, text: editedText };
+          logActivity("edited", updatedTask);
+          return updatedTask;
+        }
+        return task;
+      })
+    );
     setEditingTask(null);
   };
 
   // Get statistics data
   const getStatisticsData = () => {
     const totalTasks = tasks.length;
-    const completedTasks = tasks.filter(task => task.completed).length;
+    const completedTasks = tasks.filter((task) => task.completed).length;
     const incompleteTasks = totalTasks - completedTasks;
-    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const completionRate =
+      totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
     // Priority breakdown
     const priorityCounts = {
-      High: tasks.filter(task => task.priority === "High").length,
-      Medium: tasks.filter(task => task.priority === "Medium").length,
-      Low: tasks.filter(task => task.priority === "Low").length,
+      High: tasks.filter((task) => task.priority === "High").length,
+      Medium: tasks.filter((task) => task.priority === "Medium").length,
+      Low: tasks.filter((task) => task.priority === "Low").length,
     };
 
     // Category breakdown
     const categoryCounts = {};
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
       if (!categoryCounts[task.category]) {
         categoryCounts[task.category] = 0;
       }
@@ -192,24 +214,34 @@ export default function TaskManager() {
       date.setDate(date.getDate() - i);
       const formattedDate = date.toLocaleDateString();
       last7Days.push(formattedDate);
-      activityByDate[formattedDate] = { date: formattedDate, completed: 0, added: 0 };
+      activityByDate[formattedDate] = {
+        date: formattedDate,
+        completed: 0,
+        added: 0,
+      };
     }
 
     // Populate with actual data
-    activityLog.forEach(log => {
+    activityLog.forEach((log) => {
       if (!activityByDate[log.formattedDate]) {
-        activityByDate[log.formattedDate] = { date: log.formattedDate, completed: 0, added: 0 };
+        activityByDate[log.formattedDate] = {
+          date: log.formattedDate,
+          completed: 0,
+          added: 0,
+        };
       }
 
-      if (log.action === 'added') {
+      if (log.action === "added") {
         activityByDate[log.formattedDate].added++;
-      } else if (log.action === 'completed') {
+      } else if (log.action === "completed") {
         activityByDate[log.formattedDate].completed++;
       }
     });
 
     // Convert to array for charts, include only the last 7 days
-    const activityData = last7Days.map(date => activityByDate[date] || { date, completed: 0, added: 0 });
+    const activityData = last7Days.map(
+      (date) => activityByDate[date] || { date, completed: 0, added: 0 }
+    );
 
     return {
       totalTasks,
@@ -218,63 +250,83 @@ export default function TaskManager() {
       completionRate,
       priorityCounts,
       categoryCounts,
-      activityData
+      activityData,
     };
   };
 
-const renderTaskList = () => (
+  const renderTaskList = () => (
     <div className="h-full flex flex-col">
       <div className="flex flex-col gap-3 mb-4 p-2 bg-white rounded-lg shadow-sm">
-        <input 
-          value={newTask} 
-          onChange={(e) => setNewTask(e.target.value)} 
-          placeholder="Add a new task..." 
+        <input
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+          placeholder="Add a new task..."
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 text-sm"
         />
-        <div className="grid grid-cols-2 gap-2">
-          <select 
-            value={priority} 
-            onChange={(e) => setPriority(e.target.value)} 
-            className="p-2 border border-gray-300 rounded-lg text-sm"
-          >
-            <option value="High">🔥 High</option>
-            <option value="Medium">⚡ Medium</option>
-            <option value="Low">✅ Low</option>
-          </select>
-          <select 
-            value={category} 
-            onChange={(e) => setCategory(e.target.value)} 
-            className="p-2 border border-gray-300 rounded-lg text-sm"
-          >
-            <option value="Assignment">📚 Assignment</option>
-            <option value="Projects">🚀 Projects</option>
-            <option value="Exams">📝 Exams</option>
-            <option value="Personal">🏠 Personal</option>
-          </select>
-        </div>
-        <div>
-          <img src="/AddTask.png" alt="Add Task" className="cursor-pointer h-9 w-auto hover:scale-105 transition-transform" onClick={addTask}>
-          </img>
-        </div>
-      </div>
-      
+        {isExpanded && (
+    <div className="grid grid-cols-2 gap-2">
+      <select
+        value={priority}
+        onChange={(e) => setPriority(e.target.value)}
+        className="p-2 border border-gray-300 rounded-lg text-sm"
+      >
+        <option value="High">🔥 High</option>
+        <option value="Medium">⚡ Medium</option>
+        <option value="Low">✅ Low</option>
+      </select>
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="p-2 border border-gray-300 rounded-lg text-sm"
+      >
+        <option value="Assignment">📚 Assignment</option>
+        <option value="Projects">🚀 Projects</option>
+        <option value="Exams">📝 Exams</option>
+        <option value="Personal">🏠 Personal</option>
+      </select>
+    </div>
+  )}
+  
+  <div className="w-full flex justify-center">
+    <img
+      src="/AddTask.png"
+      alt="Add Task"
+      className="cursor-pointer h-9 w-auto hover:scale-105 transition-transform"
+      onClick={addTask}
+    />
+  </div>
+</div>
+
       <ul className="flex-1 overflow-y-auto space-y-2 pr-2">
-        {tasks.map(task => (
-          <li key={task.id} className={`flex items-center justify-between p-3 border-l-4 rounded-lg shadow-sm hover:bg-gray-50 transition ${priorityColors[task.priority]}`}>
+        {tasks.map((task) => (
+          <li
+            key={task.id}
+            className={`flex items-center justify-between p-3 border-l-4 rounded-lg shadow-sm hover:bg-gray-50 transition ${
+              priorityColors[task.priority]
+            }`}
+          >
             <div className="flex-1 min-w-0">
               {editingTask === task.id ? (
-                <input 
-                  value={editedText} 
+                <input
+                  value={editedText}
                   onChange={(e) => setEditedText(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-lg text-sm"
                 />
               ) : (
                 <div className="space-y-1">
-                  <p className={`text-sm truncate ${task.completed ? "line-through text-gray-500" : "text-gray-800 font-medium"}`}>
+                  <p
+                    className={`text-sm truncate ${
+                      task.completed
+                        ? "line-through text-gray-500"
+                        : "text-gray-800 font-medium"
+                    }`}
+                  >
                     {task.text}
                   </p>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span className="px-2 py-1 bg-white/50 rounded-full border">{task.category}</span>
+                    <span className="px-2 py-1 bg-white/50 rounded-full border">
+                      {task.category}
+                    </span>
                     <span>{new Date(task.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
@@ -282,88 +334,116 @@ const renderTaskList = () => (
             </div>
             <div className="flex gap-2 ml-2">
               {editingTask === task.id ? (
-                <button  
-                  disabled={editedText.trim() === ''}
+                <button
+                  disabled={editedText.trim() === ""}
                   onClick={() => saveEdit(task.id)}
                   className={`text-xs font-semibold transition ${
-                    editedText.trim() === '' ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-700'
+                    editedText.trim() === ""
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-blue-600 hover:text-blue-700"
                   }`}
                 >
                   Save
                 </button>
               ) : (
-                <Edit className="text-gray-500 cursor-pointer hover:text-blue-600 transition" size={16} onClick={() => startEditing(task)} />
+                <img
+                  src="/Pencil.png"
+                  alt="Edit task"
+                  className="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+                  onClick={() => startEditing(task)}
+                />
               )}
-              <CheckCircle 
-                className={`cursor-pointer ${task.completed ? "text-green-500" : "text-gray-500 hover:text-green-500 transition"}`} 
-                size={16}
-                onClick={() => toggleTask(task.id)} 
+              <img
+                src="/Tick.png"
+                alt="Complete task"
+                className={`w-6 h-6 cursor-pointer transition-opacity  ${
+                  task.completed ? "opacity-100" : "opacity-60 hover:opacity-80"
+                }`}
+                onClick={() => toggleTask(task.id)}
               />
-              <Trash className="text-red-500 cursor-pointer hover:text-red-600 transition" size={16} onClick={() => deleteTask(task.id)} />
+              <img
+                src="/Cross.png"
+                alt="Delete task"
+                className="w-6 h-6 cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+                onClick={() => deleteTask(task.id)}
+              />
             </div>
           </li>
         ))}
       </ul>
     </div>
   );
-  
+
   // Updated Statistics styling
   const renderStatistics = () => {
     const stats = getStatisticsData();
-    
+
     return (
       <div className="h-full flex flex-col gap-4">
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-xs font-medium text-gray-600 mb-1">Total Tasks</h3>
-            <p className="text-2xl font-bold text-blue-600">{stats.totalTasks}</p>
+            <h3 className="text-xs font-medium text-gray-600 mb-1">
+              Total Tasks
+            </h3>
+            <p className="text-2xl font-bold text-blue-600">
+              {stats.totalTasks}
+            </p>
           </div>
           <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-xs font-medium text-gray-600 mb-1">Completed</h3>
-            <p className="text-2xl font-bold text-green-600">{stats.completedTasks}</p>
+            <h3 className="text-xs font-medium text-gray-600 mb-1">
+              Completed
+            </h3>
+            <p className="text-2xl font-bold text-green-600">
+              {stats.completedTasks}
+            </p>
           </div>
           <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-xs font-medium text-gray-600 mb-1">Completion</h3>
-            <p className="text-2xl font-bold text-purple-600">{stats.completionRate}%</p>
+            <h3 className="text-xs font-medium text-gray-600 mb-1">
+              Completion
+            </h3>
+            <p className="text-2xl font-bold text-purple-600">
+              {stats.completionRate}%
+            </p>
           </div>
         </div>
-  
+
         <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex-1">
-          <h3 className="text-xs font-medium text-gray-600 mb-3">Weekly Activity</h3>
+          <h3 className="text-xs font-medium text-gray-600 mb-3">
+            Weekly Activity
+          </h3>
           <div className="h-[200px]">
-            {stats.activityData.some(day => day.added > 0 || day.completed > 0) ? (
+            {stats.activityData.some(
+              (day) => day.added > 0 || day.completed > 0
+            ) ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={stats.activityData}
                   margin={{ top: 5, right: 15, left: -15, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis 
-                    dataKey="date" 
+                  <XAxis
+                    dataKey="date"
                     tick={{ fontSize: 10 }}
-                    tickFormatter={(value) => value.split('/')[0]}
+                    tickFormatter={(value) => value.split("/")[0]}
                   />
-                  <YAxis 
-                    tick={{ fontSize: 10 }}
-                    width={25}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
+                  <YAxis tick={{ fontSize: 10 }} width={25} />
+                  <Tooltip
+                    contentStyle={{
                       fontSize: 12,
                       borderRadius: 8,
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                     }}
                   />
-                  <Bar 
-                    dataKey="completed" 
-                    name="Completed" 
-                    fill={chartColors.completed} 
+                  <Bar
+                    dataKey="completed"
+                    name="Completed"
+                    fill={chartColors.completed}
                     radius={[4, 4, 0, 0]}
                   />
-                  <Bar 
-                    dataKey="added" 
-                    name="Added" 
-                    fill={chartColors.added} 
+                  <Bar
+                    dataKey="added"
+                    name="Added"
+                    fill={chartColors.added}
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -376,15 +456,24 @@ const renderTaskList = () => (
             )}
           </div>
         </div>
-  
+
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-xs font-medium text-gray-600 mb-2">Priority Breakdown</h3>
+            <h3 className="text-xs font-medium text-gray-600 mb-2">
+              Priority Breakdown
+            </h3>
             <div className="space-y-1">
               {Object.entries(stats.priorityCounts).map(([priority, count]) => (
-                <div key={priority} className="flex items-center justify-between text-sm">
+                <div
+                  key={priority}
+                  className="flex items-center justify-between text-sm"
+                >
                   <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${priorityColors[priority].split(' ')[0]}`} />
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        priorityColors[priority].split(" ")[0]
+                      }`}
+                    />
                     <span className="text-gray-700">{priority}</span>
                   </div>
                   <span className="font-medium">{count}</span>
@@ -392,12 +481,17 @@ const renderTaskList = () => (
               ))}
             </div>
           </div>
-  
+
           <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-xs font-medium text-gray-600 mb-2">Categories</h3>
+            <h3 className="text-xs font-medium text-gray-600 mb-2">
+              Categories
+            </h3>
             <div className="space-y-1">
               {Object.entries(stats.categoryCounts).map(([category, count]) => (
-                <div key={category} className="flex items-center justify-between text-sm">
+                <div
+                  key={category}
+                  className="flex items-center justify-between text-sm"
+                >
                   <span className="text-gray-700">{category}</span>
                   <span className="font-medium">{count}</span>
                 </div>
@@ -409,7 +503,6 @@ const renderTaskList = () => (
     );
   };
 
-
   // Reset session function that doesn't get triggered by tab changes
   const resetSession = () => {
     setSessionStartTime(new Date());
@@ -418,65 +511,93 @@ const renderTaskList = () => (
     setTotalDistractionTime(0);
   };
 
-  return (
-    isExpanded ? (
-      <div className="p-5 bg-[#94cefb] shadow-2xl rounded-2xl border border-gray-300 w-[390px] h-[750px] flex flex-col" style={{ fontFamily: "Lilita One" }}>
-        <div className="flex justify-end items-center mb-4">
-          {/* <h2 className="text-xl" style={{ fontFamily: "Lilita One" }}>Expanded View</h2> */}
-          <X className="text-gray-500 cursor-pointer hover:text-gray-700" onClick={() => setIsExpanded(false)} />
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-2 bg-gray-100 rounded-lg shadow-inner mb-4">
-          {activeTab === "Tasks" ? renderTaskList() :
-            activeTab === "Statistics" ? renderStatistics() :
-              activeTab === "Focus Monitor" ?
-                <DistractionAlertWidget
-                  currentSessionTime={currentSessionTime}
-                  isVisible={isVisible}
-                  distractionCount={distractionCount}
-                  totalDistractionTime={totalDistractionTime}
-                  resetSession={resetSession}
-                /> :
-                activeTab === "Focus Zone" ?
-                  <div className="flex justify-center items-center h-full" style={{ transform: 'scale(0.98)' }}>
-                    <SubwaySurfers />
-                  </div> : <div></div>
-          }
-        </div>
-
-        {/* Navigation Buttons - Bottom */}
-        <div className="grid grid-cols-2 gap-2">
-          {["Tasks", "Statistics", "Focus Monitor", "Focus Zone"].map(tab => (
-            <button
-              key={tab}
-              className={`px-3 py-2 text-sm rounded-lg font-medium transition-all duration-300 ${activeTab === tab
-                  ? "bg-[#266eab] text-white shadow-md"
-                  : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                }`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+  return isExpanded ? (
+    <div
+      className="p-5 bg-[#94cefb] shadow-2xl rounded-2xl border border-gray-300 w-[390px] h-[750px] flex flex-col"
+      style={{ fontFamily: "Lilita One" }}
+    >
+      <div className="flex justify-end items-center mb-4">
+        {/* <h2 className="text-xl" style={{ fontFamily: "Lilita One" }}>Expanded View</h2> */}
+        <X
+          className="text-gray-500 cursor-pointer hover:text-gray-700"
+          onClick={() => setIsExpanded(false)}
+        />
       </div>
-    ) : (
-      <div className="relative p-5 bg-white shadow-2xl rounded-2xl border border-gray-300 w-110" style={{ fontFamily: "Lilita One" }}>
-        <div className="flex justify-between align-center">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Task Manager</h2>
-          <Maximize
-            className="text-gray-500 cursor-pointer hover:text-gray-700 transition"
-            onClick={() => setIsExpanded(true)}
-          />
-        </div>
-        {renderTaskList()}
+
+      {/* Content Area */}
+      <div className="flex-1 overflow-y-auto p-2 bg-gray-100 rounded-lg shadow-inner mb-4">
+  {/* Tasks Tab */}
+  <div style={{ display: activeTab === "Tasks" ? "block" : "none" }}>
+    {renderTaskList()}
+  </div>
+  
+  {/* Statistics Tab */}
+  <div style={{ display: activeTab === "Statistics" ? "block" : "none" }}>
+    {renderStatistics()}
+  </div>
+
+  {/* Focus Monitor Tab */}
+  <div style={{ display: activeTab === "Focus Monitor" ? "block" : "none" }}>
+    <DistractionAlertWidget
+      currentSessionTime={currentSessionTime}
+      isVisible={isVisible}
+      distractionCount={distractionCount}
+      totalDistractionTime={totalDistractionTime}
+      resetSession={resetSession}
+    />
+  </div>
+
+  {/* Focus Zone Tab */}
+  <div style={{ display: activeTab === "Focus Zone" ? "block" : "none" }}>
+    <div className="flex justify-center items-center h-full" style={{ transform: 'scale(0.98)' }}>
+      <SubwaySurfers />
+    </div>
+  </div>
+</div>
+
+      {/* Navigation Buttons - Bottom */}
+      <div className="grid grid-cols-2 gap-2">
+        {["Tasks", "Statistics", "Focus Monitor", "Focus Zone"].map((tab) => (
+          <button
+            key={tab}
+            className={`px-3 py-2 text-sm rounded-lg font-medium transition-all duration-300 ${
+              activeTab === tab
+                ? "bg-[#266eab] text-white shadow-md"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            }`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
-    )
+    </div>
+  ) : (
+    <div
+      className="relative p-5 bg-[#94cefb] shadow-2xl rounded-2xl border border-gray-300 w-80"
+      style={{ fontFamily: "Lilita One" }}
+    >
+      <div className="flex justify-between align-center">
+        <h2 className="text-2xl mb-4 text-white drop-shadow-xl">
+          Task Manager
+        </h2>
+        <Maximize
+          className="text-gray-500 cursor-pointer hover:text-gray-700 transition"
+          onClick={() => setIsExpanded(true)}
+        />
+      </div>
+      {renderTaskList()}
+    </div>
   );
 }
 
-const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCount, totalDistractionTime, resetSession }) => {
+const DistractionAlertWidget = ({
+  currentSessionTime,
+  isVisible,
+  distractionCount,
+  totalDistractionTime,
+  resetSession,
+}) => {
   DistractionAlertWidget.propTypes = {
     currentSessionTime: PropTypes.number.isRequired,
     isVisible: PropTypes.bool.isRequired,
@@ -496,7 +617,9 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
       // Calculate time of last distraction
       if (totalDistractionTime > 0 && distractionCount > 0) {
         // Estimate the last distraction time (simplified)
-        const estimatedLastDistractionTime = Math.round(totalDistractionTime / distractionCount);
+        const estimatedLastDistractionTime = Math.round(
+          totalDistractionTime / distractionCount
+        );
         setDistractionTime(estimatedLastDistractionTime);
       }
 
@@ -515,14 +638,19 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   // Calculate focus percentage
   const calculateFocusPercentage = () => {
     if (currentSessionTime === 0) return 100;
     const focusedTime = currentSessionTime - totalDistractionTime;
-    return Math.max(0, Math.min(100, Math.round((focusedTime / currentSessionTime) * 100)));
+    return Math.max(
+      0,
+      Math.min(100, Math.round((focusedTime / currentSessionTime) * 100))
+    );
   };
 
   return (
@@ -541,7 +669,9 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
           <Bell className="text-white" size={20} />
           <div>
             <p>Welcome back!</p>
-            <p className="text-sm opacity-80">You were away for {formatTime(distractionTime)}. Stay focused!</p>
+            <p className="text-sm opacity-80">
+              You were away for {formatTime(distractionTime)}. Stay focused!
+            </p>
           </div>
         </motion.div>
       )}
@@ -549,23 +679,27 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
       {/* Focus Monitor Widget */}
       <div className="bg-white/70 backdrop-blur-lg shadow-md rounded-xl overflow-hidden border border-gray-200 w-full">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-3 flex justify-between items-center">
-          <div className="flex items-center">
-            {isVisible ? <Eye className="mr-2" size={18} /> : <EyeOff className="mr-2" size={18} />}
-            <h3 className="text-sm">Focus Monitor</h3>
-          </div>
-          <button onClick={() => setIsWidgetMinimized(!isWidgetMinimized)} className="text-white hover:text-gray-300">
-            {isWidgetMinimized ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </button>
-        </div>
+        <div className="bg-[#31537f] text-white p-3 flex justify-between items-center"></div>
 
         {/* Status */}
         <div className="px-4 py-2 flex justify-between items-center">
           <div className="flex items-center">
-            <div className={`w-3 h-3 rounded-full mr-2 ${isVisible ? "bg-green-500" : "bg-red-500"}`}></div>
-            <span className="text-sm">{isVisible ? "Focused" : "Distracted"}</span>
+            <div
+              className={`w-3 h-3 rounded-full mr-2 ${
+                isVisible ? "bg-green-500" : "bg-red-500"
+              }`}
+            ></div>
+            <span className="text-sm">
+              {isVisible ? "Focused" : "Distracted"}
+            </span>
           </div>
-          <div className={`text-xs font-medium px-3 py-1 rounded-full ${isVisible ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+          <div
+            className={`text-xs font-medium px-3 py-1 rounded-full ${
+              isVisible
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
             {isVisible ? "Active" : "Away"}
           </div>
         </div>
@@ -587,16 +721,31 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
                   transition={{ duration: 0.5 }}
                 />
               </div>
-              <p className="text-right text-xs font-semibold mt-1">{calculateFocusPercentage()}%</p>
+              <p className="text-right text-xs font-semibold mt-1">
+                {calculateFocusPercentage()}%
+              </p>
             </div>
 
             {/* Session Stats */}
             <div className="grid grid-cols-2 gap-4 text-center">
               {[
-                { label: "Session", icon: <Clock size={14} className="text-gray-500" />, value: formatTime(currentSessionTime) },
-                { label: "Distractions", icon: <AlertCircle size={14} className="text-yellow-500" />, value: distractionCount },
+                {
+                  label: "Session",
+                  icon: <Clock size={14} className="text-gray-500" />,
+                  value: formatTime(currentSessionTime),
+                },
+                {
+                  label: "Distractions",
+                  icon: <AlertCircle size={14} className="text-yellow-500" />,
+                  value: distractionCount,
+                },
                 { label: "Time away", value: formatTime(totalDistractionTime) },
-                { label: "Last break", value: distractionTime ? formatTime(distractionTime) : "00:00" }
+                {
+                  label: "Last break",
+                  value: distractionTime
+                    ? formatTime(distractionTime)
+                    : "00:00",
+                },
               ].map(({ label, icon, value }, index) => (
                 <div key={index}>
                   <p className="text-xs text-gray-500">{label}</p>
@@ -610,7 +759,10 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
 
             {/* Footer */}
             <div className="flex justify-center mt-4">
-              <button onClick={resetSession} className="flex items-center text-xs text-gray-600 hover:text-red-600 transition">
+              <button
+                onClick={resetSession}
+                className="flex items-center text-xs text-gray-600 hover:text-red-600 transition"
+              >
                 <XCircle size={14} className="mr-1" />
                 Reset Session
               </button>
@@ -623,7 +775,6 @@ const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCoun
 };
 
 function SubwaySurfers() {
-
   /* Timer states */
   const [sec, setSec] = useState(0);
   const [min, setMin] = useState(0);
@@ -632,6 +783,8 @@ function SubwaySurfers() {
   const [isRunning, setIsRunning] = useState(false);
 
   /* Game footage states */
+  const [initialTime, setInitialTime] = useState(0);
+const [focusedTime, setFocusedTime] = useState(0);
   const [score, setScore] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [highScore, setHighScore] = useState(0);
@@ -648,7 +801,22 @@ function SubwaySurfers() {
     const savedHighScore = localStorage.getItem("highScore") || 0;
     setHighScore(Number(savedHighScore));
   }, []);
-
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Tab becomes hidden
+        if (video1Ref.current && !video1Ref.current.paused) video1Ref.current.pause();
+        if (video2Ref.current && !video2Ref.current.paused) video2Ref.current.pause();
+      } else if (isRunning && !isPaused) {
+        // Tab becomes visible and game is running
+        if (currentVideo === "game-start") video1Ref.current.play();
+        if (currentVideo === "game-loop") video2Ref.current.play();
+      }
+    };
+  
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isRunning, isPaused, currentVideo]);
   /* Timer countdown */
   useEffect(() => {
     if (isRunning && timeLeft > 0 && !isPaused) {
@@ -716,6 +884,7 @@ function SubwaySurfers() {
   const startGame = async () => {
     const totalSeconds = hour * 3600 + min * 60 + sec;
     if (totalSeconds > 0) {
+      setInitialTime(totalSeconds);
       setIsRunning(true);
       setTimeLeft(totalSeconds);
       setCurrentVideo("game-start");
@@ -754,6 +923,8 @@ function SubwaySurfers() {
 
   /* Ends game */
   const endGame = () => {
+    const elapsed = initialTime - timeLeft;
+  setFocusedTime(elapsed);
     setIsRunning(false);
     setShowGameOver(true);
     video1Ref.current.pause();
@@ -783,13 +954,19 @@ function SubwaySurfers() {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    return `${String(hours).padStart(2, "0")}:${String(mins).padStart(
+      2,
+      "0"
+    )}:${String(secs).padStart(2, "0")}`;
   };
 
   const formatScore = (score) => String(score).padStart(6, "0").slice(-6);
 
   return (
-    <div className="relative h-[560px] w-[315px] bg-black overflow-hidden rounded-md" style={{ fontFamily: "Lilita One" }}>
+    <div
+      className="relative h-[560px] w-[315px] bg-black overflow-hidden rounded-md"
+      style={{ fontFamily: "Lilita One" }}
+    >
       {/* HOME: looping background footage */}
       {currentVideo === "home" && (
         <video
@@ -806,8 +983,9 @@ function SubwaySurfers() {
         ref={video1Ref}
         muted
         playsInline
-        className={`absolute top-0 left-0 w-full h-full object-cover ${currentVideo !== "game-start" ? "hidden" : ""
-          }`}
+        className={`absolute top-0 left-0 w-full h-full object-cover ${
+          currentVideo !== "game-start" ? "hidden" : ""
+        }`}
       >
         <source src="/Start.mp4" type="video/mp4" />
       </video>
@@ -817,8 +995,9 @@ function SubwaySurfers() {
         muted
         loop
         playsInline
-        className={`absolute top-0 left-0 w-full h-full object-cover ${currentVideo !== "game-loop" ? "hidden" : ""
-          }`}
+        className={`absolute top-0 left-0 w-full h-full object-cover ${
+          currentVideo !== "game-loop" ? "hidden" : ""
+        }`}
       >
         <source src="/Loop.mp4" type="video/mp4" />
       </video>
@@ -884,12 +1063,16 @@ function SubwaySurfers() {
         </div>
       )}
 
-
       {/* HOME: Timer input panel */}
       {!isRunning && !showGameOver && (
-        <div >
-          <p className="absolute bottom-40 text-white translate-x-4 flex animate-pulse -rotate-8">Input how long your task is!</p>
-          <div className="absolute bottom-25 left-1/2 -translate-x-1/2 z-10 bg-gray-700 px-2 py-2 rounded-md grid grid-cols-3 gap-2" style={{ fontFamily: "Lilita One" }}>
+        <div>
+          <p className="absolute bottom-40 text-white translate-x-4 flex animate-pulse -rotate-8">
+            Input how long your task is!
+          </p>
+          <div
+            className="absolute bottom-25 left-1/2 -translate-x-1/2 z-10 bg-gray-700 px-2 py-2 rounded-md grid grid-cols-3 gap-2"
+            style={{ fontFamily: "Lilita One" }}
+          >
             <input
               className="text-center bg-white rounded p-1"
               type="number"
@@ -937,13 +1120,24 @@ function SubwaySurfers() {
         <div
           className="w-full h-full flex flex-col items-center justify-center text-white p-4 text-center absolute inset-0 z-50"
           style={{
-            backgroundImage: `url(/End_Screen.png)`, backgroundSize: "cover", backgroundPosition: "center"
+            backgroundImage: `url(/End_Screen.png)`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
           }}
         >
           <div className="mt-24 text-center">
-            <p className="absolute top-14 right-13.5 text-xl font-bold " style={{ fontFamily: "Lilita One" }}>
+            <p
+              className="absolute top-14 right-13.5 text-xl font-bold "
+              style={{ fontFamily: "Lilita One" }}
+            >
               {formatScore(score)}
             </p>
+            <p 
+        className="absolute top-34 right-11 text-xl font-bold "
+        style={{ fontFamily: "Lilita One" }}
+      >
+        {formatTime(focusedTime)}
+      </p>
           </div>
           <div className="absolute bottom-7 w-full flex justify-center gap-8">
             <img
