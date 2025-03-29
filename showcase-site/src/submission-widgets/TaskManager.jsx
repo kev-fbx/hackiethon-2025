@@ -1,10 +1,10 @@
-import { useState,useEffect  } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Trash, CheckCircle, Maximize, X, Edit, PieChart } from "lucide-react";
 import Confetti from "react-confetti";
-import {  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,  } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { AlertCircle, Bell, Clock, Eye, EyeOff, XCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { motion } from "framer-motion";
-
+import PropTypes from 'prop-types';
 
 export default function TaskManager() {
   const [tasks, setTasks] = useState([]);
@@ -17,6 +17,50 @@ export default function TaskManager() {
   const [activeTab, setActiveTab] = useState("Tasks");
   const [showConfetti, setShowConfetti] = useState(false);
   const [activityLog, setActivityLog] = useState([]);
+  const [currentSessionTime, setCurrentSessionTime] = useState(0);
+  const [distractionCount, setDistractionCount] = useState(0);
+  const [lastDistraction, setLastDistraction] = useState(null);
+  const [totalDistractionTime, setTotalDistractionTime] = useState(0);
+  const [sessionStartTime, setSessionStartTime] = useState(new Date());
+  const [isVisible, setIsVisible] = useState(true);
+
+  // Initialize the session timer when the component mounts
+  useEffect(() => {
+    // Handle visibility change (browser tab changes)
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // User left the page/app
+        setIsVisible(false);
+        setLastDistraction(new Date());
+      } else {
+        // User returned to the page/app
+        setIsVisible(true);
+        
+        if (lastDistraction) {
+          const timeAway = Math.round((new Date() - lastDistraction) / 1000);
+          setTotalDistractionTime(prev => prev + timeAway);
+          setDistractionCount(prev => prev + 1);
+        }
+      }
+    };
+
+    // Session timer - runs regardless of which internal tab is active
+    const sessionTimer = setInterval(() => {
+      if (isVisible) { // Only increment time when tab is visible
+        const elapsed = Math.round((new Date() - sessionStartTime) / 1000);
+        setCurrentSessionTime(prev => elapsed);
+      }
+    }, 1000);
+
+    // Add event listener for visibility change
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Clean up
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(sessionTimer);
+    };
+  }, [lastDistraction, sessionStartTime, isVisible]);
 
   const priorityColors = {
     High: "bg-red-200 border-red-500",
@@ -31,7 +75,7 @@ export default function TaskManager() {
     completed: "#3B82F6",
     added: "#6366F1",
     Personal: "#8B5CF6",
-    Homework: "#EC4899",
+    Assignment: "#EC4899",
     Projects: "#F97316",
     Exams: "#0EA5E9",
   };
@@ -202,7 +246,7 @@ export default function TaskManager() {
               value={category} 
               onChange={(e) => setCategory(e.target.value)} 
               className="p-3 border border-gray-300 rounded-lg">
-              <option value="Homework">📚 Homework</option>
+              <option value="Assignment">📚 Assignment</option>
               <option value="Projects">🚀 Projects</option>
               <option value="Exams">📝 Exams</option>
               <option value="Personal">🏠 Personal</option>
@@ -311,6 +355,14 @@ export default function TaskManager() {
     );
   };
 
+  // Reset session function that doesn't get triggered by tab changes
+  const resetSession = () => {
+    setSessionStartTime(new Date());
+    setCurrentSessionTime(0);
+    setDistractionCount(0);
+    setTotalDistractionTime(0);
+  };
+
   return (
     isExpanded ? (
       <div className="p-5 bg-white shadow-2xl rounded-2xl border border-gray-300 w-[40vw]">
@@ -319,7 +371,7 @@ export default function TaskManager() {
           <X className="text-gray-500 cursor-pointer hover:text-gray-700" onClick={() => setIsExpanded(false)} />
         </div>
         <div className="flex justify-center space-x-4 mb-6 border-b pb-4">
-          {["Tasks", "Statistics","Focus Mode", ].map(tab => (
+          {["Tasks", "Statistics", "Focus Mode", "Game analytics"].map(tab => (
             <button 
               key={tab} 
               className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${activeTab === tab ? "bg-blue-600 text-white shadow-md" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`} 
@@ -332,9 +384,15 @@ export default function TaskManager() {
         <div className="h-80 overflow-y-auto p-4 bg-gray-100 rounded-lg shadow-inner">
           {activeTab === "Tasks" ? renderTaskList() : 
            activeTab === "Statistics" ? renderStatistics() :
-           <DistractionAlertWidget/>
-        //    <div className="flex items-center justify-center h-full text-lg font-semibold text-gray-600">{activeTab}</div>
-           }
+           activeTab === "Focus Mode" ? 
+           <DistractionAlertWidget 
+             currentSessionTime={currentSessionTime} 
+             isVisible={isVisible}
+             distractionCount={distractionCount}
+             totalDistractionTime={totalDistractionTime}
+             resetSession={resetSession}
+           />:<div></div>
+          }
         </div>
       </div>
     ) : (
@@ -352,89 +410,56 @@ export default function TaskManager() {
   );
 }
 
-const DistractionAlertWidget = () => {
-    const [isVisible, setIsVisible] = useState(true);
-    const [distractionCount, setDistractionCount] = useState(0);
-    const [lastDistraction, setLastDistraction] = useState(null);
-    const [showWelcomeBack, setShowWelcomeBack] = useState(false);
-    const [distractionTime, setDistractionTime] = useState(0);
-    const [totalDistractionTime, setTotalDistractionTime] = useState(0);
-    const [isWidgetMinimized, setIsWidgetMinimized] = useState(false);
-    const [sessionStartTime, setSessionStartTime] = useState(new Date());
-    const [currentSessionTime, setCurrentSessionTime] = useState(0);
+const DistractionAlertWidget = ({ currentSessionTime, isVisible, distractionCount, totalDistractionTime, resetSession }) => {
+  DistractionAlertWidget.propTypes = {
+    currentSessionTime: PropTypes.number.isRequired,
+    isVisible: PropTypes.bool.isRequired,
+    distractionCount: PropTypes.number.isRequired,
+    totalDistractionTime: PropTypes.number.isRequired,
+    resetSession: PropTypes.func.isRequired,
+  };
+
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+  const [isWidgetMinimized, setIsWidgetMinimized] = useState(false);
+  const [distractionTime, setDistractionTime] = useState(0);
   
-    useEffect(() => {
-      // Handle visibility change
-      const handleVisibilityChange = () => {
-        if (document.hidden) {
-          // User left the page
-          setIsVisible(false);
-          setLastDistraction(new Date());
-        } else {
-          // User returned to the page
-          setIsVisible(true);
-          
-          if (lastDistraction) {
-            const timeAway = Math.round((new Date() - lastDistraction) / 1000);
-            setDistractionTime(timeAway);
-            setTotalDistractionTime(prev => prev + timeAway);
-            setDistractionCount(prev => prev + 1);
-            setShowWelcomeBack(true);
-            
-  
-          //   const audio = new Audio();
-          //   audio.src = './mixkit-software-interface-remove-2576.wav'; 
-  
-          //   audio.play().catch(e => console.log("Audio play failed:", e));
-            
-            // Hide the welcome back message after 5 seconds
-            setTimeout(() => {
-              setShowWelcomeBack(false);
-            }, 5000);
-          }
-        }
-      };
-  
-      // Session timer
-      const sessionTimer = setInterval(() => {
-        const elapsed = Math.round((new Date() - sessionStartTime) / 1000);
-        setCurrentSessionTime(elapsed);
-      }, 1000);
-  
-      // Add event listener for visibility change
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-  
-      // Clean up
-      return () => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        clearInterval(sessionTimer);
-      };
-    }, [lastDistraction, sessionStartTime]);
-  
-    // Format seconds to mm:ss
-    const formatTime = (seconds) => {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-  
-    // Calculate focus percentage
-    const calculateFocusPercentage = () => {
-      if (currentSessionTime === 0) return 100;
-      const focusedTime = currentSessionTime - totalDistractionTime;
-      return Math.max(0, Math.min(100, Math.round((focusedTime / currentSessionTime) * 100)));
-    };
-  
-    // Reset session
-    const resetSession = () => {
-      setSessionStartTime(new Date());
-      setCurrentSessionTime(0);
-      setDistractionCount(0);
-      setTotalDistractionTime(0);
-      setDistractionTime(0);
-    };
-  
- return (
+  // When isVisible changes from false to true, show welcome back message
+  useEffect(() => {
+    // Only show welcome back message when returning from being away
+    if (isVisible && distractionCount > 0) {
+      // Calculate time of last distraction
+      if (totalDistractionTime > 0 && distractionCount > 0) {
+        // Estimate the last distraction time (simplified)
+        const estimatedLastDistractionTime = Math.round(totalDistractionTime / distractionCount);
+        setDistractionTime(estimatedLastDistractionTime);
+      }
+      
+      setShowWelcomeBack(true);
+      
+      // Hide the welcome back message after 5 seconds
+      const timer = setTimeout(() => {
+        setShowWelcomeBack(false);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, distractionCount, totalDistractionTime]);
+
+  // Format seconds to mm:ss
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Calculate focus percentage
+  const calculateFocusPercentage = () => {
+    if (currentSessionTime === 0) return 100;
+    const focusedTime = currentSessionTime - totalDistractionTime;
+    return Math.max(0, Math.min(100, Math.round((focusedTime / currentSessionTime) * 100)));
+  };
+
+  return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
