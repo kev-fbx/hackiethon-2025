@@ -199,7 +199,7 @@ export default function TaskManager() {
               value={category} 
               onChange={(e) => setCategory(e.target.value)} 
               className="p-3 border border-gray-300 rounded-lg">
-              <option value="Homework">📚 Homework</option>
+              <option value="Homework">📚 Assignment</option>
               <option value="Projects">🚀 Projects</option>
               <option value="Exams">📝 Exams</option>
               <option value="Personal">🏠 Personal</option>
