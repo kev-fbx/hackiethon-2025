@@ -1,7 +1,10 @@
-import { useState,  } from "react";
+import { useState,useEffect  } from "react";
 import { Trash, CheckCircle, Maximize, X, Edit, PieChart } from "lucide-react";
 import Confetti from "react-confetti";
 import {  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,  } from "recharts";
+import { AlertCircle, Bell, Clock, Eye, EyeOff, XCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import { motion } from "framer-motion";
+
 
 export default function TaskManager() {
   const [tasks, setTasks] = useState([]);
@@ -199,7 +202,7 @@ export default function TaskManager() {
               value={category} 
               onChange={(e) => setCategory(e.target.value)} 
               className="p-3 border border-gray-300 rounded-lg">
-              <option value="Homework">📚 Assignment</option>
+              <option value="Homework">📚 Homework</option>
               <option value="Projects">🚀 Projects</option>
               <option value="Exams">📝 Exams</option>
               <option value="Personal">🏠 Personal</option>
@@ -255,13 +258,6 @@ export default function TaskManager() {
 
   const renderStatistics = () => {
     const stats = getStatisticsData();
-    
-   
-    
-  
-    
-    
-
     const noDataMessage = (
       <div className="flex flex-col items-center justify-center h-full text-gray-500">
         <PieChart size={40} className="mb-3 opacity-50" />       
@@ -323,7 +319,7 @@ export default function TaskManager() {
           <X className="text-gray-500 cursor-pointer hover:text-gray-700" onClick={() => setIsExpanded(false)} />
         </div>
         <div className="flex justify-center space-x-4 mb-6 border-b pb-4">
-          {["Tasks", "Statistics","Calendar", ].map(tab => (
+          {["Tasks", "Statistics","Focus Mode", ].map(tab => (
             <button 
               key={tab} 
               className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${activeTab === tab ? "bg-blue-600 text-white shadow-md" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`} 
@@ -336,7 +332,9 @@ export default function TaskManager() {
         <div className="h-80 overflow-y-auto p-4 bg-gray-100 rounded-lg shadow-inner">
           {activeTab === "Tasks" ? renderTaskList() : 
            activeTab === "Statistics" ? renderStatistics() :
-           <div className="flex items-center justify-center h-full text-lg font-semibold text-gray-600">{activeTab}</div>}
+           <DistractionAlertWidget/>
+        //    <div className="flex items-center justify-center h-full text-lg font-semibold text-gray-600">{activeTab}</div>
+           }
         </div>
       </div>
     ) : (
@@ -353,3 +351,182 @@ export default function TaskManager() {
     )
   );
 }
+
+const DistractionAlertWidget = () => {
+    const [isVisible, setIsVisible] = useState(true);
+    const [distractionCount, setDistractionCount] = useState(0);
+    const [lastDistraction, setLastDistraction] = useState(null);
+    const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+    const [distractionTime, setDistractionTime] = useState(0);
+    const [totalDistractionTime, setTotalDistractionTime] = useState(0);
+    const [isWidgetMinimized, setIsWidgetMinimized] = useState(false);
+    const [sessionStartTime, setSessionStartTime] = useState(new Date());
+    const [currentSessionTime, setCurrentSessionTime] = useState(0);
+  
+    useEffect(() => {
+      // Handle visibility change
+      const handleVisibilityChange = () => {
+        if (document.hidden) {
+          // User left the page
+          setIsVisible(false);
+          setLastDistraction(new Date());
+        } else {
+          // User returned to the page
+          setIsVisible(true);
+          
+          if (lastDistraction) {
+            const timeAway = Math.round((new Date() - lastDistraction) / 1000);
+            setDistractionTime(timeAway);
+            setTotalDistractionTime(prev => prev + timeAway);
+            setDistractionCount(prev => prev + 1);
+            setShowWelcomeBack(true);
+            
+  
+          //   const audio = new Audio();
+          //   audio.src = './mixkit-software-interface-remove-2576.wav'; 
+  
+          //   audio.play().catch(e => console.log("Audio play failed:", e));
+            
+            // Hide the welcome back message after 5 seconds
+            setTimeout(() => {
+              setShowWelcomeBack(false);
+            }, 5000);
+          }
+        }
+      };
+  
+      // Session timer
+      const sessionTimer = setInterval(() => {
+        const elapsed = Math.round((new Date() - sessionStartTime) / 1000);
+        setCurrentSessionTime(elapsed);
+      }, 1000);
+  
+      // Add event listener for visibility change
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+      // Clean up
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        clearInterval(sessionTimer);
+      };
+    }, [lastDistraction, sessionStartTime]);
+  
+    // Format seconds to mm:ss
+    const formatTime = (seconds) => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+  
+    // Calculate focus percentage
+    const calculateFocusPercentage = () => {
+      if (currentSessionTime === 0) return 100;
+      const focusedTime = currentSessionTime - totalDistractionTime;
+      return Math.max(0, Math.min(100, Math.round((focusedTime / currentSessionTime) * 100)));
+    };
+  
+    // Reset session
+    const resetSession = () => {
+      setSessionStartTime(new Date());
+      setCurrentSessionTime(0);
+      setDistractionCount(0);
+      setTotalDistractionTime(0);
+      setDistractionTime(0);
+    };
+  
+ return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center w-full max-w-md mx-auto"
+    >
+      {/* Welcome back notification */}
+      {showWelcomeBack && (
+        <motion.div
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          className="bg-blue-600 text-white p-4 rounded-xl shadow-lg mb-3 flex items-center gap-2"
+        >
+          <Bell className="text-white" size={20} />
+          <div>
+            <p className="font-semibold">Welcome back!</p>
+            <p className="text-sm opacity-80">You were away for {formatTime(distractionTime)}. Stay focused!</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Focus Monitor Widget */}
+      <div className="bg-white/70 backdrop-blur-lg shadow-md rounded-xl overflow-hidden border border-gray-200 w-full">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-3 flex justify-between items-center">
+          <div className="flex items-center">
+            {isVisible ? <Eye className="mr-2" size={18} /> : <EyeOff className="mr-2" size={18} />}
+            <h3 className="font-semibold text-sm">Focus Monitor</h3>
+          </div>
+          <button onClick={() => setIsWidgetMinimized(!isWidgetMinimized)} className="text-white hover:text-gray-300">
+            {isWidgetMinimized ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+        </div>
+
+        {/* Status */}
+        <div className="px-4 py-2 flex justify-between items-center">
+          <div className="flex items-center">
+            <div className={`w-3 h-3 rounded-full mr-2 ${isVisible ? "bg-green-500" : "bg-red-500"}`}></div>
+            <span className="text-sm">{isVisible ? "Focused" : "Distracted"}</span>
+          </div>
+          <div className={`text-xs font-medium px-3 py-1 rounded-full ${isVisible ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+            {isVisible ? "Active" : "Away"}
+          </div>
+        </div>
+
+        {/* Metrics */}
+        {!isWidgetMinimized && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4"
+          >
+            <div className="mb-3">
+              <p className="text-xs text-gray-600">Focus rate</p>
+              <div className="relative w-full bg-gray-200 rounded-full h-2 mt-1">
+                <motion.div
+                  className="absolute top-0 left-0 bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${calculateFocusPercentage()}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+              <p className="text-right text-xs font-semibold mt-1">{calculateFocusPercentage()}%</p>
+            </div>
+
+            {/* Session Stats */}
+            <div className="grid grid-cols-2 gap-4 text-center">
+              {[
+                { label: "Session", icon: <Clock size={14} className="text-gray-500" />, value: formatTime(currentSessionTime) },
+                { label: "Distractions", icon: <AlertCircle size={14} className="text-yellow-500" />, value: distractionCount },
+                { label: "Time away", value: formatTime(totalDistractionTime) },
+                { label: "Last break", value: distractionTime ? formatTime(distractionTime) : "00:00" }
+              ].map(({ label, icon, value }, index) => (
+                <div key={index}>
+                  <p className="text-xs text-gray-500">{label}</p>
+                  <div className="flex justify-center items-center mt-1 gap-1">
+                    {icon}
+                    <span className="text-sm font-medium">{value}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-center mt-4">
+              <button onClick={resetSession} className="flex items-center text-xs text-gray-600 hover:text-red-600 transition">
+                <XCircle size={14} className="mr-1" />
+                Reset Session
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
