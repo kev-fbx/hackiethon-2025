@@ -1,18 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
 
 function SubwaySurfers() {
+  
   /* Timer states */
   const [sec, setSec] = useState(0);
   const [min, setMin] = useState(0);
   const [hour, setHour] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  
+
   /* Game footage states */
   const [score, setScore] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const [highScore, setHighScore] = useState(0);
   const [showGameOver, setShowGameOver] = useState(false);
   const [currentVideo, setCurrentVideo] = useState("home");
+  const [timeReached, setTimeReached] = useState(false);
   const video1Ref = useRef(null);
   const video2Ref = useRef(null);
   const scoreTimerRef = useRef(null);
@@ -22,6 +25,44 @@ function SubwaySurfers() {
   useEffect(() => {
     const savedHighScore = localStorage.getItem("highScore") || 0;
     setHighScore(Number(savedHighScore));
+  }, []);
+
+  /* Timer countdown */
+  useEffect(() => {
+    if (isRunning && timeLeft > 0 && !isPaused) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    } else if (timeLeft === 0 && isRunning) {
+      endGame();
+    }
+  }, [isRunning, timeLeft, isPaused]);
+
+  /* Score system */
+  useEffect(() => {
+    if (isRunning) {
+      scoreTimerRef.current = setInterval(() => {
+        scoreRef.current += 1;
+        setScore((prev) => prev + 1);
+      }, 90);
+    }
+    return () => clearInterval(scoreTimerRef.current);
+  }, [isRunning]);
+
+  /* Buffer videos early so the transitions are smooth */
+  useEffect(() => {
+    const video2 = video2Ref.current;
+    const checkBuffer = () => {
+      if (video2.buffered.length > 0 && video2.buffered.end(0) > 5) {
+        video1Ref.current.addEventListener("ended", checkVideo1End);
+      } else {
+        requestAnimationFrame(checkBuffer);
+      }
+    };
+
+    video2.preload = "auto";
+    checkBuffer();
   }, []);
 
   /* Gets hour input from user */
@@ -42,30 +83,6 @@ function SubwaySurfers() {
     setSec(value);
   };
 
-  /* Timer countdown */
-  useEffect(() => {
-    if (isRunning && timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-      
-      return () => clearInterval(timer);
-    } else if (timeLeft === 0 && isRunning) {
-      endGame();
-    }
-  }, [isRunning, timeLeft]);
-
-  /* Score system */
-  useEffect(() => {
-    if (isRunning) {
-      scoreTimerRef.current = setInterval(() => {
-        scoreRef.current += 1;
-        setScore((prev) => prev + 1);
-      }, 90);
-    }
-    return () => clearInterval(scoreTimerRef.current);
-  }, [isRunning]);
-
   /* Changes videos */
   const checkVideo1End = () => {
     video2Ref.current.currentTime = 0;
@@ -80,7 +97,7 @@ function SubwaySurfers() {
       setIsRunning(true);
       setTimeLeft(totalSeconds);
       setCurrentVideo("game-start");
-      
+
       try {
         await video1Ref.current.play();
         video1Ref.current.addEventListener("ended", checkVideo1End);
@@ -90,13 +107,36 @@ function SubwaySurfers() {
     }
   };
 
+  /* Pauses game */
+  const togglePause = () => {
+    if (!timeReached) {
+      const currPauseState = !isPaused;
+      setIsPaused(currPauseState);
+
+      if (currPauseState) {
+        clearInterval(scoreTimerRef.current);
+        video1Ref.current.pause();
+        video2Ref.current.pause();
+      } else {
+        scoreTimerRef.current = setInterval(() => {
+          scoreRef.current += 1;
+          setScore((prev) => prev + 1);
+        }, 90);
+
+        currentVideo === "game-start"
+          ? video1Ref.current.play()
+          : video2Ref.current.play();
+      }
+    }
+  };
+
   /* Ends game */
   const endGame = () => {
     setIsRunning(false);
     setShowGameOver(true);
-    video1Ref.current?.pause();
-    video2Ref.current?.pause();
-    
+    video1Ref.current.pause();
+    video2Ref.current.pause();
+
     if (score > highScore) {
       localStorage.setItem("highScore", score.toString());
       setHighScore(score);
@@ -105,9 +145,12 @@ function SubwaySurfers() {
 
   /* Returns to home page and resets */
   const returnHome = () => {
+    setScore(0);
     setShowGameOver(false);
     setCurrentVideo("home");
-    setScore(0);
+    setIsRunning(false);
+    setTimeReached(false);
+    setIsPaused(false);
     scoreRef.current = 0;
     video1Ref.current.currentTime = 0;
     video2Ref.current.currentTime = 0;
@@ -142,7 +185,7 @@ function SubwaySurfers() {
         muted
         playsInline
         className={`absolute top-0 left-0 w-full h-full object-cover ${currentVideo !== "game-start" ? "hidden" : ""
-        }`}
+          }`}
       >
         <source src="/Start.mp4" type="video/mp4" />
       </video>
@@ -153,10 +196,53 @@ function SubwaySurfers() {
         loop
         playsInline
         className={`absolute top-0 left-0 w-full h-full object-cover ${currentVideo !== "game-loop" ? "hidden" : ""
-        }`}
+          }`}
       >
         <source src="/Loop.mp4" type="video/mp4" />
       </video>
+
+      {/* Pause Button */}
+      {isRunning && !isPaused && (
+        <img
+          src="/Pause.png"
+          alt="Pause"
+          className="absolute top-3 left-3 z-10 cursor-pointer h-8 w-auto hover:scale-110 transition-transform"
+          onClick={togglePause}
+        />
+      )}
+
+      {/* Pause Overlay */}
+      {isPaused && (
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50"
+          style={{
+            width: "240px",
+            height: "171.6px",
+            backgroundImage: `url(/PauseMenu.png)`,
+            backgroundSize: "contain",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 px-4">
+            <img
+              src="/Yes.png"
+              alt="Resume"
+              className="cursor-pointer h-12 w-auto max-w-[80px] hover:scale-105 transition-transform object-contain"
+              onClick={togglePause}
+            />
+            <img
+              src="/No.png"
+              alt="Quit"
+              className="cursor-pointer h-12 w-auto max-w-[80px] hover:scale-105 transition-transform object-contain"
+              onClick={() => {
+                setIsPaused(false);
+                endGame();
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* GAME: HUD */}
       {isRunning && (
@@ -167,8 +253,15 @@ function SubwaySurfers() {
           <div className="bg-black/50 text-white px-2 py-1 rounded-md text-sm">
             SCORE: {formatScore(score)}
           </div>
+          <div
+            className="bg-black/50 text-white px-2 py-1 rounded-md text-sm"
+            style={{ fontFamily: "Lilita One" }}
+          >
+            TOP RUN: {formatScore(highScore)}
+          </div>
         </div>
       )}
+
 
       {/* HOME: Timer input panel */}
       {!isRunning && !showGameOver && (
@@ -221,17 +314,18 @@ function SubwaySurfers() {
       {showGameOver && (
         <div
           className="w-full h-full flex flex-col items-center justify-center text-white p-4 text-center absolute inset-0 z-50"
-          style={{backgroundImage: `url(/End_Screen.png)`, backgroundSize: "cover", backgroundPosition: "center"
+          style={{
+            backgroundImage: `url(/End_Screen.png)`, backgroundSize: "cover", backgroundPosition: "center"
           }}
         >
           <div className="mt-24 text-center">
-          <p className="absolute top-14 right-13.5 text-xl font-bold " style={{ fontFamily: "Lilita One"}}>
+            <p className="absolute top-14 right-13.5 text-xl font-bold " style={{ fontFamily: "Lilita One" }}>
               {formatScore(score)}
             </p>
           </div>
           <div className="absolute bottom-7 w-full flex justify-center gap-8">
             <img
-              src="/Quit.png"
+              src="/Home.png"
               alt="Home"
               className="cursor-pointer h-11 w-auto hover:scale-105 transition-transform"
               onClick={returnHome}
