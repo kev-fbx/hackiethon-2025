@@ -51,7 +51,7 @@ const FocusMode = () => {
   /* Initialises timer */
   const startTimer = () => {
     setIsRunning(true);
-    const totSeconds = hour * 3600 +  min * 60 + sec;
+    const totSeconds = hour * 3600 + min * 60 + sec;
     if (totSeconds > 0) {
       setTimeLeft(totSeconds);
     } else {
@@ -85,39 +85,42 @@ const FocusMode = () => {
           className="w-34 h-12 bg-[url('/Start-btn.png')] bg-cover bg-center bg-no-repeat transition duration 200 active:brightness-50 disabled:opacity-0"
         />
       </div>
-        <div className="absolute h-[50px] bottom-22 left-1/2 -translate-x-1/2 z-10 bg-gray-700 px-1 py-1 rounded-md grid grid-cols-3 gap-1 disabled:opacity-0" disabled={isRunning}>
-          <input 
-            className="bg-white rounded-xs px-1.5 disabled:opacity-0"
-            type="number"
-            min="0"
-            max="99"
-            value={hour}
-            onChange={changeHour}
-            disabled={isRunning}
-            placeholder="hh"
-          />
-          <input
-            className="bg-white rounded-xs px-1.5 disabled:opacity-0"
-            type="number"
-            min="0"
-            max="59"
-            value={min}
-            onChange={changeMin}
-            disabled={isRunning}
-            placeholder="mm"
-          />
-          <input 
-            className="bg-white rounded-xs px-1.5 disabled:opacity-0"
-            type="number"
-            min="0"
-            max="59"
-            value={sec}
-            onChange={changeSec}
-            disabled={isRunning}
-            placeholder="ss"
-            />
-        </div>
-      </div>
+      {!isRunning && (<div className="absolute h-[50px] bottom-22 left-1/2 -translate-x-1/2 z-10 bg-gray-700 px-1 py-1 rounded-md grid grid-cols-3 gap-1">
+        <input
+          className="bg-white text-center rounded-xs px-1.5"
+          style={{ fontFamily: "Lilita One" }}
+          type="number"
+          min="0"
+          max="99"
+          value={hour}
+          onChange={changeHour}
+          disabled={isRunning}
+          placeholder="hh"
+        />
+        <input
+          className="bg-white text-center rounded-xs px-1.5"
+          style={{ fontFamily: "Lilita One" }}
+          type="number"
+          min="0"
+          max="59"
+          value={min}
+          onChange={changeMin}
+          disabled={isRunning}
+          placeholder="mm"
+        />
+        <input
+          className="bg-white text-center rounded-xs px-1.5"
+          style={{ fontFamily: "Lilita One" }}
+          type="number"
+          min="0"
+          max="59"
+          value={sec}
+          onChange={changeSec}
+          disabled={isRunning}
+          placeholder="ss"
+        />
+      </div>)}
+    </div>
   );
 };
 
