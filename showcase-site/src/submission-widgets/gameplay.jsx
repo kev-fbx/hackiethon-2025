@@ -7,7 +7,7 @@ export default function VideoTimerWidget() {
   const [highScore, setHighScore] = useState(0);
   const [timeReached, setTimeReached] = useState(false);
   const [currentVideo, setCurrentVideo] = useState("video1");
-  const Multiplier = 5; // Points multiplier for visual effect
+  //const Multiplier = 5; Points multiplier,not in use yet
   const duration = 30; // Total session duration in seconds
 
   // Video references and timers
@@ -17,7 +17,7 @@ export default function VideoTimerWidget() {
   const scoreTimerRef = useRef(null);
   const scoreRef = useRef(0); // Mutable score reference for intervals
 
-  // Load high score from browser storage on startup
+  // Load high score from browser storage on startup AI did this bit not too sure how it works but it works
   useEffect(() => {
     const savedHighScore = localStorage.getItem("videoHighScore") || 0;
     setHighScore(Number(savedHighScore));
@@ -147,7 +147,7 @@ export default function VideoTimerWidget() {
 
   // Format score with leading zeros (000000 format)
   const formatScore = (score) => {
-    return String(score * Multiplier)
+    return String(score /** Multiplier*/)
       .padStart(6, "0")
       .slice(-6);
   };
