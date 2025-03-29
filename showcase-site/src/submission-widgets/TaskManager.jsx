@@ -384,7 +384,7 @@ export default function TaskManager() {
              resetSession={resetSession}
            />: 
            activeTab === "Focus Zone" ?
-           <div className="flex h-40" style={{transform: 'scale(0.98)'}}>
+           <div className="flex justify-center items-center h-full" style={{transform: 'scale(0.98)'}}>
             <SubwaySurfers/>
           </div>:<div></div>
           }
